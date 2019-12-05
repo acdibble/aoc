@@ -9,7 +9,7 @@ const wireToSet = (wireSteps) => {
   const location = {
     x: 0,
     y: 0,
-  }
+  };
 
   return wireSteps.reduce((acc, step) => {
     const direction = step[0];
@@ -22,7 +22,7 @@ const wireToSet = (wireSteps) => {
     }
     return acc;
   }, new Set());
-}
+};
 
 const wire1 = wireToSet(wires[0]);
 const wire2 = wireToSet(wires[1]);

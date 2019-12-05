@@ -9,7 +9,7 @@ const wireToObject = (wireSteps) => {
   const location = {
     x: 0,
     y: 0,
-  }
+  };
 
   let numberOfSteps = 0;
 
@@ -40,4 +40,4 @@ const combinedStepsMap = Object.entries(wire1).reduce((acc, [loc, steps]) => {
   return acc;
 }, {});
 
-console.log(Object.values(combinedStepsMap).reduce((acc, dist) => dist < acc ? dist : acc, Infinity));
+console.log(Object.values(combinedStepsMap).reduce((acc, dist) => (dist < acc ? dist : acc), Infinity));

@@ -11,8 +11,9 @@ const numberPassesValidation = (number) => {
     }
   }
 
-  return [...num.matchAll(/([0-9])\1+/g)].some(([match]) => match.length === 2);
-}
+  return [...num.matchAll(/([0-9])\1+/g)]
+    .some(([match]) => match.length === 2);
+};
 
 const range = input.split('-');
 

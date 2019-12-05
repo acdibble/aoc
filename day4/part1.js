@@ -12,7 +12,7 @@ const numberPassesValidation = (number) => {
   }
 
   return /([0-9])\1/.test(num);
-}
+};
 
 const range = input.split('-');
 
