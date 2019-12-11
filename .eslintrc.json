@@ -17,6 +17,8 @@
     "rules": {
         "no-console": "off",
         "no-plusplus": "off",
-        "no-restricted-syntax": "off"
+        "no-restricted-syntax": "off",
+        "no-await-in-loop": "off",
+        "no-bitwise": "off"
     }
 }
