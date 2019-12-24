@@ -20,11 +20,15 @@ public:
 
   int getIntcode(size_t index);
 
+  void loadNounAndVerb(int noun, int verb);
+  void reset();
+
 private:
   std::vector<int> intcodes{};
   size_t pointer{ 0 };
   bool ready{ false };
   bool debugMode{ false };
+  std::vector<int> program{};
 
   void printDebug(int opcode, int operand1, int operand2, int operand3);
   bool updateIntcode(size_t index, int value);

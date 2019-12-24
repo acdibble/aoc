@@ -13,6 +13,8 @@ IntcodeComputer::IntcodeComputer(const char path[]) {
     intcodes.push_back(std::stoi(code));
   }
 
+  program = intcodes;
+
   pointer = 0;
   file.close();
   ready = true;
@@ -109,4 +111,19 @@ void IntcodeComputer::printDebug(int opcode, int operand1, int operand2, int ope
 
 int IntcodeComputer::getIntcode(size_t index) {
   return intcodes.at(index);
+}
+
+void IntcodeComputer::loadNounAndVerb(int noun, int verb) {
+  if (!(updateIntcode(1, noun) && updateIntcode(2, verb))) {
+    std::cout << "Error loading noun or verb" << std::endl;
+    ready = false;
+  }
+}
+
+void IntcodeComputer::reset() {
+  for (size_t i{ 0 }; i < intcodes.size(); i++) {
+    intcodes[i] = program[i];
+  }
+  pointer = 0;
+  ready = true;
 }
