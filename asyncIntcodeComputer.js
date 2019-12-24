@@ -16,9 +16,9 @@ const processIntcodes = async (ops, inputIntcodes) => {
     const [relativeMode, param2Mode, param1Mode, , opcode] = padded;
     let param1 = intcodes[++i];
     let operand1 = null;
-    if (param1Mode === '1') {
+    if (param1Mode === 1) {
       operand1 = param1;
-    } else if (param1Mode === '2') {
+    } else if (param1Mode === 2) {
       if (opcode === 3) {
         param1 = relativeBase + param1;
       }
@@ -29,9 +29,9 @@ const processIntcodes = async (ops, inputIntcodes) => {
     let operand2 = null;
     if (opcode !== 3 && opcode !== 4 && opcode !== 9) {
       const param2 = intcodes[++i];
-      if (param2Mode === '1') {
+      if (param2Mode === 1) {
         operand2 = param2;
-      } else if (param2Mode === '2') {
+      } else if (param2Mode === 2) {
         operand2 = intcodes[relativeBase + param2];
       } else {
         operand2 = intcodes[param2];
@@ -42,7 +42,7 @@ const processIntcodes = async (ops, inputIntcodes) => {
 
     const result = await ops[opcode](operand1, operand2);
     if (opcode === 1 || opcode === 2 || opcode === 7 || opcode === 8) {
-      const index = intcodes[++i] + (relativeMode === '2' ? relativeBase : 0);
+      const index = intcodes[++i] + (relativeMode === 2 ? relativeBase : 0);
       intcodes[index] = result;
     } else if (opcode === 3) {
       intcodes[param1] = result;
