@@ -1,5 +1,5 @@
 const fs = require('fs');
-const asyncIntcodeComputer = require('../asyncIntcodeComputer');
+const asyncIntcodeComputer = require('../lib/asyncIntcodeComputer');
 
 const intcodes = fs.readFileSync(`${__dirname}/data.txt`, 'utf8').split(',').map(Number);
 

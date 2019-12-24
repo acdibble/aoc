@@ -1,5 +1,5 @@
 const fs = require('fs');
-const intcodeComputer = require('../intcodeComputer');
+const intcodeComputer = require('../lib/intcodeComputer');
 
 const intcodes = fs.readFileSync(`${__dirname}/data.txt`, 'utf8')
   .replace(/\s/g, '')
