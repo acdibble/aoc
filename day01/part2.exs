@@ -15,7 +15,7 @@ defmodule Fuel do
 end
 
 File.read!("day01/data.txt")
-  |> String.split()
-  |> Enum.map(&String.to_integer/1)
-  |> Enum.reduce(0, fn module, acc -> acc + Fuel.get_requirement(module) end)
-  |> IO.inspect()
+|> String.split()
+|> Enum.map(&String.to_integer/1)
+|> Enum.reduce(0, fn module, acc -> acc + Fuel.get_requirement(module) end)
+|> IO.inspect()
