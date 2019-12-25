@@ -1,0 +1,198 @@
+[
+  {
+    "name": "Hull Breach",
+    "description": "You got in through a hole in the floor here. To keep your ship from also freezing, the hole has been sealed.",
+    "doors": {
+      "north": "Gift Wrapping Center",
+      "south": "Navigation",
+      "west": "Science Lab"
+    },
+    "items": []
+  },
+  {
+    "name": "Gift Wrapping Center",
+    "description": "How else do you wrap presents on the go?",
+    "doors": {
+      "south": "Hull Breach"
+    },
+    "items": []
+  },
+  {
+    "name": "Navigation",
+    "description": "Status: Stranded. Please supply measurements from fifty stars to recalibrate.",
+    "doors": {
+      "north": "Hull Breach",
+      "east": "Kitchen",
+      "south": "Crew Quarters"
+    },
+    "items": [
+      "coin"
+    ]
+  },
+  {
+    "name": "Kitchen",
+    "description": "Everything's freeze-dried.",
+    "doors": {
+      "south": "Sick Bay",
+      "west": "Navigation"
+    },
+    "items": [
+      "mouse"
+    ]
+  },
+  {
+    "name": "Sick Bay",
+    "description": "Supports both Red-Nosed Reindeer medicine and regular reindeer medicine.",
+    "doors": {
+      "north": "Kitchen",
+      "south": "Storage"
+    },
+    "items": []
+  },
+  {
+    "name": "Storage",
+    "description": "The boxes just contain more boxes.  Recursively.",
+    "doors": {
+      "north": "Sick Bay"
+    },
+    "items": [
+      "hypercube"
+    ]
+  },
+  {
+    "name": "Crew Quarters",
+    "description": "The beds are all too small for you.",
+    "doors": {
+      "north": "Navigation",
+      "west": "Hot Chocolate Fountain"
+    },
+    "items": []
+  },
+  {
+    "name": "Hot Chocolate Fountain",
+    "description": "Somehow, it's still working.",
+    "doors": {
+      "north": "Hallway",
+      "east": "Crew Quarters"
+    },
+    "items": [
+      "infinite loop"
+    ]
+  },
+  {
+    "name": "Hallway",
+    "description": "This area has been optimized for something; you're just not quite sure what.",
+    "doors": {
+      "north": "Security Checkpoint",
+      "south": "Hot Chocolate Fountain"
+    },
+    "items": [
+      "giant electromagnet"
+    ]
+  },
+  {
+    "name": "Security Checkpoint",
+    "description": "In the next room, a pressure-sensitive floor will verify your identity.",
+    "doors": {
+      "north": null,
+      "south": "Hallway"
+    },
+    "items": []
+  },
+  {
+    "name": "Science Lab",
+    "description": "You see evidence here of prototype polymer design work.",
+    "doors": {
+      "east": "Hull Breach",
+      "west": "Warp Drive Maintenance"
+    },
+    "items": [
+      "cake"
+    ]
+  },
+  {
+    "name": "Warp Drive Maintenance",
+    "description": "It appears to be working normally.",
+    "doors": {
+      "east": "Science Lab",
+      "south": "Arcade",
+      "west": "Engineering"
+    },
+    "items": [
+      "pointer"
+    ]
+  },
+  {
+    "name": "Engineering",
+    "description": "You see a whiteboard with plans for Springdroid v2.",
+    "doors": {
+      "east": "Warp Drive Maintenance",
+      "south": "Stables"
+    },
+    "items": [
+      "escape pod"
+    ]
+  },
+  {
+    "name": "Stables",
+    "description": "Reindeer-sized. They're all empty.",
+    "doors": {
+      "north": "Engineering",
+      "east": "Passages"
+    },
+    "items": [
+      "tambourine"
+    ]
+  },
+  {
+    "name": "Passages",
+    "description": "They're a little twisty and starting to look all alike.",
+    "doors": {
+      "east": "Corridor",
+      "south": "Observatory",
+      "west": "Stables"
+    },
+    "items": [
+      "photons"
+    ]
+  },
+  {
+    "name": "Observatory",
+    "description": "There are a few telescopes; they're all bolted down, though.",
+    "doors": {
+      "north": "Passages"
+    },
+    "items": [
+      "molten lava"
+    ]
+  },
+  {
+    "name": "Corridor",
+    "description": "The metal walls and the metal floor are slightly different colors. Or are they?",
+    "doors": {
+      "east": "Holodeck",
+      "west": "Passages"
+    },
+    "items": []
+  },
+  {
+    "name": "Holodeck",
+    "description": "Someone seems to have left it on the Giant Grid setting.",
+    "doors": {
+      "west": "Corridor"
+    },
+    "items": [
+      "mug"
+    ]
+  },
+  {
+    "name": "Arcade",
+    "description": "None of the cabinets seem to have power.",
+    "doors": {
+      "north": "Warp Drive Maintenance"
+    },
+    "items": [
+      "monolith"
+    ]
+  }
+]
