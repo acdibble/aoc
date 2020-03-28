@@ -11,10 +11,10 @@ fn get_path(args: &[&str]) -> std::path::PathBuf {
 }
 
 fn calculate_requirement(fuel: i32) -> i32 {
-  match fuel / 3 - 2 {
-    n if n <= 0 => 0,
-    n => n + calculate_requirement(n),
-  }
+    match fuel / 3 - 2 {
+        n if n <= 0 => 0,
+        n => n + calculate_requirement(n),
+    }
 }
 
 fn main() {
