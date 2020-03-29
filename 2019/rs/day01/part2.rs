@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn get_path(args: &[&str]) -> std::path::PathBuf {
-    let mut path = env::current_dir().expect("this didn't work?");
+    let mut path = env::current_dir().unwrap();
     for arg in args.iter() {
         path.push(arg);
     }
@@ -18,12 +18,12 @@ fn calculate_requirement(fuel: i32) -> i32 {
 }
 
 fn main() {
-    let path = get_path(&["data.txt"]);
-    let file = File::open(path).expect("couldn't read file");
+    let path = get_path(&["day01", "data.txt"]);
+    let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
     let mut result = 0;
     for line in reader.lines() {
-        let fuel: i32 = line.expect("this is a line").parse().unwrap();
+        let fuel: i32 = line.unwrap().parse().unwrap();
         result += calculate_requirement(fuel)
     }
     println!("result: {}", result);
