@@ -13,8 +13,8 @@ defmodule Fuel do
   end
 end
 
-File.read!("day01/data.txt")
-|> String.split()
-|> Enum.map(&String.to_integer/1)
+File.stream!("day01/data.txt")
+|> Stream.map(&String.trim/1)
+|> Stream.map(&String.to_integer/1)
 |> Enum.reduce(0, &Fuel.get_requirement/2)
 |> IO.inspect()
