@@ -12,3 +12,7 @@ chrono = "0.4"
 [[bin]]
 name = "part1"
 path = "part1.rs"
+
+[[bin]]
+name = "part2"
+path = "part2.rs"
