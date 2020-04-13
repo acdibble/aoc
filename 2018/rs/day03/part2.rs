@@ -43,9 +43,9 @@ fn parse_string(string: String) -> Claim {
 }
 
 fn main() {
-    let mut matrix: Vec<Vec<Vec<u16>>> = Vec::new();
+    let mut matrix: Vec<Vec<Vec<u16>>> = Vec::with_capacity(1000);;
     for i in 0..1000 {
-        matrix.push(Vec::new());
+        matrix.push(Vec::with_capacity(1000););
         for _ in 0..1000 {
             matrix[i].push(Vec::<u16>::new());
         }
