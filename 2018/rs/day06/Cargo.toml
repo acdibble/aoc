@@ -15,3 +15,7 @@ path = "part1.rs"
 [[bin]]
 name = "part2"
 path = "part2.rs"
+
+[lib]
+name = "coorindate_map"
+path = "coordinate_map.rs"
