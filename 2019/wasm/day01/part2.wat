@@ -7,11 +7,27 @@
     i32.load
   )
   (func $calculateFuel (param $fuel i32) (result i32)
-    local.get $fuel
-    i32.const 3
-    i32.div_u
-    i32.const 2
-    i32.sub
+    (local $output i32)
+
+    (block
+      (loop
+        local.get $fuel
+        i32.const 3
+        i32.div_s
+        i32.const 2
+        i32.sub
+        local.tee $fuel
+        i32.const 0
+        i32.le_s
+        (br_if 1)
+        local.get $fuel
+        local.get $output
+        i32.add
+        local.set $output
+        (br 0)
+      )
+    )
+    local.get $output
   )
   (func $accumulate (param $end i32) (result i32)
     (local $index i32)
