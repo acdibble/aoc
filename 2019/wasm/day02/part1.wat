@@ -46,7 +46,14 @@
     call $incrementPointer
     drop
   )
-  (func $processIntcodes (param $byteLength i32)
+  (func $processIntcodes (param $byteLength i32) (result i32)
+    i32.const 4
+    i32.const 12
+    i32.store
+    i32.const 8
+    i32.const 2
+    i32.store
+
     (block
       (loop
         global.get $pointer
@@ -69,6 +76,9 @@
         (br 0)
       )
     )
+
+    i32.const 0
+    i32.load
   )
   (export "processIntcodes" (func $processIntcodes))
 )
