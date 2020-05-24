@@ -1,6 +1,8 @@
 defmodule DayOne.PartTwo do
+  use FileReader
+
   def run do
-    File.stream!("day01/data.txt")
+    stream_file!()
     |> Stream.map(&String.trim/1)
     |> Stream.map(&String.to_integer/1)
     |> Enum.reduce(0, &get_requirement/2)

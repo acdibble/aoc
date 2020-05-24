@@ -1,6 +1,8 @@
 defmodule DayTwo.PartTwo do
+  use FileReader
+
   def run do
-    intcodes = IntcodeComputer.read_file("day02/data.txt")
+    intcodes = IntcodeComputer.read_file(get_input_filename())
 
     run(intcodes, 0, 0)
   end

@@ -3,6 +3,6 @@
   inputs: [
     "{mix,.formatter}.exs",
     "{config,lib,test}/**/*.{ex,exs}",
-    Path.wildcard("day*/**/*.ex{,s}")
+    Path.wildcard("day*/*.ex")
   ]
 ]

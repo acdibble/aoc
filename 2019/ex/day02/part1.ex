@@ -1,5 +1,7 @@
 defmodule DayTwo.PartOne do
+  use FileReader
+
   def run do
-    IntcodeComputer.start("day02/data.txt", %{1 => 12, 2 => 2})
+    IntcodeComputer.start(get_input_filename(), %{1 => 12, 2 => 2})
   end
 end

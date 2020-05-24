@@ -1,6 +1,8 @@
 defmodule DayOne.PartOne do
+  use FileReader
+
   def run do
-    File.read!("day01/data.txt")
+    read_file!()
     |> String.split()
     |> Enum.reduce(0, fn mass, acc ->
       mass
