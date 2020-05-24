@@ -1,0 +1,102 @@
+use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+#[derive(Debug)]
+struct Step {
+    name: char,
+    constraints: HashSet<char>,
+}
+
+#[derive(Default, Debug)]
+struct Worker {
+    time_remaining: u32,
+    task: Option<char>,
+}
+
+impl Worker {
+    fn assign(&mut self, c: &char) {
+        self.task = Some(c.clone());
+        self.time_remaining = 60 + *c as u32 - b'A' as u32;
+    }
+
+    fn tick(&mut self) {
+        if self.task.is_some() && self.time_remaining > 0 {
+            self.time_remaining -= 1;
+        }
+    }
+
+    fn get_result(&mut self) -> Option<char> {
+        let mut option = None;
+        if self.task.is_some() && self.time_remaining == 0 {
+            option = self.task;
+            self.task = None;
+        }
+        return option;
+    }
+
+    fn needs_task(&self) -> bool {
+        self.task.is_none()
+    }
+}
+
+fn main() {
+    let mut parsed: Vec<Step> = Vec::with_capacity(26);
+    let mut all_steps: HashSet<char> = Default::default();
+    let mut steps_with_constraints: HashSet<char> = Default::default();
+
+    BufReader::new(File::open("input.txt").unwrap())
+        .lines()
+        .for_each(|line| {
+            let unwrapped = line.unwrap();
+            let mut chars = unwrapped.chars();
+            let constraint = chars.nth(5).unwrap();
+            let name = chars.nth(30).unwrap();
+            all_steps.insert(name);
+            steps_with_constraints.insert(name);
+            all_steps.insert(constraint);
+            if let Some(index) = parsed.iter().position(|step| step.name == name) {
+                parsed[index].constraints.insert(constraint);
+            } else {
+                let mut constraints = HashSet::new();
+                constraints.insert(constraint);
+                parsed.push(Step { name, constraints });
+            }
+        });
+
+    let mut available_steps: Vec<_> = all_steps
+        .difference(&steps_with_constraints)
+        .cloned()
+        .collect();
+
+    let mut time_elapsed = 0;
+    let mut completed_steps = String::new();
+    let mut workers: [Worker; 5] = Default::default();
+
+    while completed_steps.len() != all_steps.len() {
+        available_steps.sort();
+
+        let work_assignable = !available_steps.is_empty();
+
+        for worker in &mut workers {
+            worker.tick();
+            if let Some(current) = worker.get_result() {
+                completed_steps.push(current);
+
+                for step in &mut parsed {
+                    if step.constraints.remove(&current) && step.constraints.len() == 0 {
+                        available_steps.push(step.name);
+                    }
+                }
+            } else if worker.needs_task() && work_assignable && !available_steps.is_empty() {
+                let new_task = available_steps.remove(0);
+                worker.assign(&new_task);
+            }
+        }
+
+        time_elapsed += 1;
+    }
+
+    println!("{:?}", &completed_steps);
+    println!("{:?}", &time_elapsed);
+}
