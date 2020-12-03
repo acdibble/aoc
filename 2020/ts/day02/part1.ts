@@ -10,7 +10,7 @@ const validPasswordCount = fs.readFileSync(path.join(__dirname, 'data.txt'), 'ut
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = /^(?<min>\d+)-(?<max>\d+) (?<letter>[a-z]): (?<password>[a-z]+)$/.exec(line)!.groups!;
 
-  const difference = password.length - password.replace(new RegExp(`(${letter})`, 'g'), '').length;
+  const difference = password.match(new RegExp(`(${letter})`, 'g'))?.length ?? 0;
   return acc + Number(difference >= Number(min) && difference <= Number(max));
 }, 0);
 
