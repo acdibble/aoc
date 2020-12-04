@@ -26,8 +26,8 @@ const regExps = [
 
 const checkHeight = (val: string): boolean => {
   const [, num, unit] = /^([0-9]+)(cm|in)$/.exec(val) ?? [];
-  if (!num) return false;
 
+  if (!num) return false;
   if (unit === 'cm') return num >= '150' && num <= '193';
   return num >= '59' && num <= '76';
 };
@@ -44,7 +44,5 @@ const validators: Record<string, { test: (val: string) => boolean}> = {
 
 console.log(passports.filter((passport) => regExps.every((regExp) => {
   const [, name, value] = regExp.exec(passport) ?? [];
-  if (!value) return false;
-  const validator = validators[name];
-  return validator.test(value);
+  return Boolean(value) && validators[name].test(value);
 })).length);
