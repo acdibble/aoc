@@ -1,48 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const passports = fs.readFileSync(path.join(__dirname, 'data.txt'), 'utf8')
+const monster = new RegExp(
+  '(?=.*byr:(19[2-9][0-9]|200[012])(\\s|$))'
+  + '(?=.*iyr:20(1[0-9]|20)(\\s|$))'
+  + '(?=.*eyr:20(2[0-9]|30)(\\s|$))'
+  + '(?=.*hgt:((59|6[0-9]|7[0-6])in|1(([5-8][0-9]|9[0-3])cm))(\\s|$))'
+  + '(?=.*hcl:#[0-9a-f]{6}(\\s|$))'
+  + '(?=.*ecl:(amb|blu|brn|gry|grn|hzl|oth)(\\s|$))'
+  + '(?=.*pid:[0-9]{9}(\\s|$))',
+  's',
+);
+
+const count = fs.readFileSync(path.join(__dirname, 'data.txt'), 'utf8')
   .split('\n\n')
-  .map((line) => line.replace(/\n/g, ' '));
+  .reduce((acc, line) => acc + Number(monster.test(line)), 0);
 
-const birthYear = 'byr';
-const issueYear = 'iyr';
-const expirationYear = 'eyr';
-const height = 'hgt';
-const hairColor = 'hcl';
-const eyeColor = 'ecl';
-const passportID = 'pid';
-// const countryID = 'cid';
-
-const regExps = [
-  birthYear,
-  issueYear,
-  expirationYear,
-  height,
-  hairColor,
-  eyeColor,
-  passportID,
-].map((string) => new RegExp(`(${string}):([^ ]+)`));
-
-const checkHeight = (val: string): boolean => {
-  const [, num, unit] = /^([0-9]+)(cm|in)$/.exec(val) ?? [];
-
-  if (!num) return false;
-  if (unit === 'cm') return num >= '150' && num <= '193';
-  return num >= '59' && num <= '76';
-};
-
-const validators: Record<string, { test: (val: string) => boolean}> = {
-  [birthYear]: { test: (val) => val >= '1920' && val <= '2002' },
-  [issueYear]: { test: (val) => val >= '2010' && val <= '2020' },
-  [expirationYear]: { test: (val) => val >= '2020' && val <= '2030' },
-  [height]: { test: checkHeight },
-  [hairColor]: /^#[0-9a-f]{6}$/,
-  [eyeColor]: /^(amb|blu|brn|gry|grn|hzl|oth)$/,
-  [passportID]: /^[0-9]{9}$/,
-};
-
-console.log(passports.filter((passport) => regExps.every((regExp) => {
-  const [, name, value] = regExp.exec(passport) ?? [];
-  return Boolean(value) && validators[name].test(value);
-})).length);
+console.log(count);
