@@ -1,3 +1,5 @@
 #! /bin/sh
 
-deno run --allow-read "./day$1/part$2.ts"
+printf -v day "%02d" $1
+
+deno run --allow-read "./day$day/part$2.ts"
