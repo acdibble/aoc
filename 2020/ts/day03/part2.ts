@@ -1,9 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { path } from "../deps.ts";
 
-const TREE = '#';
+const TREE = "#";
 
-const map = fs.readFileSync(path.join(__dirname, 'data.txt'), 'utf8').split('\n');
+const map = (await Deno.readTextFile(
+  path.join(path.fromFileUrl(path.dirname(import.meta.url)), "data.txt"),
+)).split("\n");
 
 const totalTreeCount = [
   [1, 1],

@@ -1,5 +1,4 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { path } from "../deps.ts";
 
 const getProduct = (numbers: number[]) => {
   for (const number of numbers) {
@@ -12,11 +11,12 @@ const getProduct = (numbers: number[]) => {
     }
   }
 
-  throw new Error('unable to find triple');
+  throw new Error("unable to find triple");
 };
 
-(async () => {
-  const numbers = (await fs.promises.readFile(path.join(__dirname, 'data.txt'), 'utf8')).split('\n').map(Number);
+const numbers = (await Deno.readTextFile(
+  path.join(path.fromFileUrl(path.dirname(import.meta.url)), "data.txt"),
+))
+  .split("\n").map(Number);
 
-  console.log(getProduct(numbers));
-})();
+console.log(getProduct(numbers));
