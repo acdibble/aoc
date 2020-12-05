@@ -6,13 +6,18 @@ export const calculateId = (seat: string): number =>
     2,
   );
 
-const ids = (await Deno.readTextFile(
+const [actualSum, seatCount, lowestId, highestId] = (await Deno.readTextFile(
   path.join(path.fromFileUrl(path.dirname(import.meta.url)), "data.txt"),
 ))
   .split("\n")
-  .map(calculateId);
+  .reduce(
+    ([total, count, min, max], seat) => {
+      const id = calculateId(seat);
+      return [total + id, count + 1, Math.min(min, id), Math.max(max, id)];
+    },
+    [0, 1, Infinity, -Infinity],
+  );
 
-const expectedSum = (Math.min.apply(null, ids) + Math.max.apply(null, ids)) *
-  (ids.length + 1) / 2;
+const expectedSum = (lowestId + highestId) * (seatCount) / 2;
 
-console.log(expectedSum - ids.reduce((a, b) => a + b));
+console.log(expectedSum - actualSum);
