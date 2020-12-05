@@ -1,3 +1,3 @@
 #! /bin/sh
 
-npx tsc && node "./day$1/part$2.js"
+deno run --allow-read "./day$1/part$2.ts"
