@@ -8,7 +8,6 @@ const validPasswordCount = (await Deno.readTextFile(
     max,
     letter,
     password,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = /^(?<min>\d+)-(?<max>\d+) (?<letter>[a-z]): (?<password>[a-z]+)$/.exec(
     line,
   )!.groups!;
