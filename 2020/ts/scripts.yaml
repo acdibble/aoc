@@ -1,2 +1,0 @@
-scripts:
-  start: deno run --allow-read "./day$(printf -v day "%02d" $1)/part$2.ts"
