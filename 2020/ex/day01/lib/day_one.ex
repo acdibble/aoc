@@ -9,12 +9,7 @@ defmodule DayOne do
   def part_one do
     numbers = get_numbers("../data.txt")
 
-    for i <- numbers, j <- numbers do
-      case i + j do
-        2020 -> throw(i * j)
-        _ -> nil
-      end
-    end
+    for i <- numbers, j <- numbers, i + j == 2020, do: throw(i * j)
   catch
     x -> x
   end
@@ -22,12 +17,7 @@ defmodule DayOne do
   def part_two do
     numbers = get_numbers("../data.txt")
 
-    for i <- numbers, j <- numbers, k <- numbers do
-      case i + j + k do
-        2020 -> throw(i * j * k)
-        _ -> nil
-      end
-    end
+    for i <- numbers, j <- numbers, k <- numbers, i + j + k == 2020, do: throw(i * j * k)
   catch
     x -> x
   end
