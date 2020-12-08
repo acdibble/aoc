@@ -13,15 +13,24 @@ const program: [Instruction, number][] = (await readFile(import.meta.url))
     },
   );
 
-const runProgram = (instructions: [Instruction, number][]): number | null => {
+for (let i = program.length - 1; i >= 0; i -= 1) {
+  const old = program[i][0];
+
+  if (program[i][0] === "jmp") {
+    program[i][0] = "nop";
+  } else if (program[i][0] === "nop") {
+    program[i][0] = "jmp";
+  } else {
+    continue;
+  }
+
   let pc = 0;
   let acc = 0;
-
   const seenPcs = new Set<number>();
 
-  while (!seenPcs.has(pc) && pc !== instructions.length) {
+  while (!seenPcs.has(pc) && pc !== program.length) {
     seenPcs.add(pc);
-    const [op, int] = instructions[pc];
+    const [op, int] = program[pc];
     switch (op) {
       // deno-lint-ignore no-fallthrough
       case "acc":
@@ -37,26 +46,10 @@ const runProgram = (instructions: [Instruction, number][]): number | null => {
     }
   }
 
-  return pc === instructions.length ? acc : null;
-};
-
-const runModified = (index: number, instr: Instruction): number | null => {
-  const modified = program.map((op) => [...op] as [Instruction, number]);
-  modified[index][0] = instr;
-  return runProgram(modified);
-};
-
-for (let i = program.length - 1; i >= 0; i -= 1) {
-  let result: number | null = null;
-
-  if (program[i][0] === "jmp") {
-    result = runModified(i, "nop");
-  } else if (program[i][0] === "nop") {
-    result = runModified(i, "jmp");
-  }
-
-  if (result !== null) {
-    console.log(result);
+  if (pc === program.length) {
+    console.log(acc);
     break;
   }
+
+  program[i][0] = old;
 }
