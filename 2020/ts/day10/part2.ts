@@ -5,14 +5,16 @@ const numbers = (await readFile(import.meta.url)).split("\n").map(Number).sort((
   b,
 ) => a - b);
 
-const map = [0, ...numbers].reverse().reduce((acc, current) => {
-  acc[current] = [1, 2, 3].reduce(
+const offsets = [1, 2, 3];
+
+const result = [0, ...numbers].reverse().reduce((acc, current) => {
+  acc[current] = offsets.reduce(
     (count, offset) => count + (acc[current + offset] ?? 0),
     0,
   );
   return acc;
 }, {
   [numbers[numbers.length - 1] + 3]: 1,
-});
+})[0];
 
-console.log(map[0]);
+console.log(result);
