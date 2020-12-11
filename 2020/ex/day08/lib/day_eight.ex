@@ -22,14 +22,10 @@ defmodule DayEight do
 
     codes
     |> Map.keys()
-    |> Enum.reduce_while(nil, fn current, _acc ->
+    |> Enum.find_value(fn current ->
       case codes[current] do
         {:acc, _value} -> nil
         {op, value} -> run(%{codes | current => {swap(op), value}}, :fix)
-      end
-      |> case do
-        nil -> {:cont, nil}
-        result -> {:halt, result}
       end
     end)
   end
