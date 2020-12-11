@@ -1,11 +1,10 @@
 defmodule DayEight do
-  defp load_codes(path) do
+  defp load_code(path) do
     __ENV__.file
     |> Path.dirname()
     |> Path.join(path)
     |> File.stream!()
-    |> Stream.map(&String.trim/1)
-    |> Stream.map(&String.split(&1, " ", trim: true))
+    |> Stream.map(&(String.trim(&1) |> String.split(" ", trim: true)))
     |> Stream.with_index()
     |> Enum.into(%{}, fn {[cmd, num], index} ->
       {index, {String.to_atom(cmd), String.to_integer(num)}}
@@ -13,46 +12,31 @@ defmodule DayEight do
   end
 
   def part_one do
-    load_codes("../data.txt")
+    load_code("../data.txt")
     |> run(:acc)
   end
 
   def part_two do
-    codes = load_codes("../data.txt")
-
-    codes
-    |> Map.keys()
-    |> Enum.find_value(fn current ->
-      case codes[current] do
-        {:acc, _value} -> nil
-        {op, value} -> run(%{codes | current => {swap(op), value}}, :fix)
-      end
-    end)
+    code = load_code("../data.txt")
+    Enum.find_value(code, &replace(&1, code))
   end
 
-  defp run(codes, flag, visited_addresses \\ [], index \\ 0, acc \\ 0)
+  defp run(code, flag, addresses \\ [], index_acc_tuple \\ {0, 0}, stop \\ false)
 
-  defp run(codes, flag, visited_addresses, index, acc) do
-    if index in visited_addresses do
-      handle(flag, acc)
-    else
-      case process_command(codes[index], index, acc) do
-        {new_index, new_acc} ->
-          run(codes, flag, [index | visited_addresses], new_index, new_acc)
+  defp run(_code, :fix, _addresses, {nil, acc}, _stop), do: acc
+  defp run(_code, :acc, _addresses, {_index, acc}, true), do: acc
+  defp run(_code, :fix, _addresses, {_index, _acc}, true), do: nil
 
-        result ->
-          result
-      end
-    end
-  end
+  defp run(code, flag, addresses, {index, acc}, false),
+    do: run(code, flag, [index | addresses], process(code[index], index, acc), index in addresses)
 
-  defp handle(:acc, num), do: num
-  defp handle(:fix, _num), do: nil
+  defp process({:jmp, value}, index, acc), do: {index + value, acc}
+  defp process({:nop, _value}, index, acc), do: {index + 1, acc}
+  defp process({:acc, value}, index, acc), do: {index + 1, acc + value}
+  defp process(nil, _index, acc), do: {nil, acc}
 
-  defp process_command({:jmp, value}, index, acc), do: {index + value, acc}
-  defp process_command({:nop, _value}, index, acc), do: {index + 1, acc}
-  defp process_command({:acc, value}, index, acc), do: {index + 1, acc + value}
-  defp process_command(nil, _index, acc), do: acc
+  defp replace({_index, {:acc, _value}}, _code), do: nil
+  defp replace({index, {op, value}}, code), do: run(%{code | index => {swap(op), value}}, :fix)
 
   defp swap(:jmp), do: :nop
   defp swap(:nop), do: :jmp
