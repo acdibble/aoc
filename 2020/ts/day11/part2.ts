@@ -23,18 +23,18 @@ const neighbors = [
 const getNewValue = (board: Tile[][], x: number, y: number): Tile => {
   const current = board[y][x];
   if (current === ".") return ".";
-  let occupiedSeats = 0;
-  for (const [xOffset, yOffset] of neighbors) {
-    let adjustedX = 0;
-    let adjustedY = 0;
+
+  const occupiedSeats = neighbors.reduce((acc, [xOffset, yOffset]) => {
+    let adjustedX = x;
+    let adjustedY = y;
     let neighbor: Tile;
     do {
       adjustedX += xOffset;
       adjustedY += yOffset;
-      neighbor = board[y + adjustedY]?.[x + adjustedX];
+      neighbor = board[adjustedY]?.[adjustedX];
     } while (neighbor === ".");
-    occupiedSeats += Number(neighbor === "#");
-  }
+    return acc + Number(neighbor === "#");
+  }, 0);
 
   if (current === "L" && occupiedSeats === 0) return "#";
   if (current === "#" && occupiedSeats >= 5) return "L";
@@ -52,7 +52,7 @@ for (iteration = 0; aSeatChanged; iteration += 1) {
   for (let y = 0; y < currentSeats.length; y += 1) {
     for (let x = 0; x < currentSeats[y].length; x += 1) {
       nextSeats[y][x] = getNewValue(currentSeats, x, y);
-      if (nextSeats[y][x] !== currentSeats[y][x]) aSeatChanged = true;
+      aSeatChanged ||= nextSeats[y][x] !== currentSeats[y][x];
     }
   }
 
