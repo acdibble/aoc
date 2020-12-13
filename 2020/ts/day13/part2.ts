@@ -10,8 +10,6 @@ const gcd = (a: bigint, b: bigint): bigint => (b === 0n ? a : gcd(b, a % b));
 
 const lcm = (a: bigint, b: bigint): bigint => a * b / gcd(a, b);
 
-const lcmAll = (numbers: bigint[]): bigint => numbers.reduce(lcm);
-
 let bussesToInclude = 2;
 let increment = 1n;
 let timestamp = 0n;
@@ -20,12 +18,14 @@ main:
 while (bussesToInclude <= busses.length) {
   timestamp += increment;
 
+  let newIncrement = 1n;
   for (let i = 0; i < bussesToInclude; i++) {
     const [bus, offset] = busses[i];
     if ((timestamp + offset) % bus !== 0n) continue main;
+    newIncrement = lcm(bus, newIncrement);
   }
 
-  increment = lcmAll(busses.slice(0, bussesToInclude).map(([b]) => b));
+  increment = newIncrement;
   bussesToInclude += 1;
 }
 
