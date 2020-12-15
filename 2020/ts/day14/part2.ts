@@ -15,33 +15,26 @@ for (const line of program) {
     mask = newMask;
   } else if (memRegExp.test(line)) {
     const { groups } = memRegExp.exec(line)!;
-    const addresses = [
-      Number(groups!.address).toString(2).padStart(36, "0").split(""),
-    ];
-    for (let i = 0; i < mask.length; i++) {
+    const addresses = [BigInt(groups!.address)];
+    for (let i = 35n; i >= 0n; i--) {
       const addressCount = addresses.length;
       for (let j = 0; j < addressCount; j++) {
-        if (mask[i] === "1") {
-          addresses[j][i] = mask[i];
-        } else if (mask[i] === "X") {
-          const newVal = [...addresses[j]];
-          addresses[j][i] = "0";
-          newVal[i] = "1";
+        const bit = mask[35 - Number(i)];
+        if (bit === "1") {
+          addresses[j] |= (1n << i);
+        } else if (bit === "X") {
+          let newVal = addresses[j];
+          addresses[j] &= ~(1n << i);
+          newVal |= (1n << i);
           addresses.push(newVal);
         }
       }
     }
     const value = Number(groups!.value);
     for (const address of addresses) {
-      memory[address.join("")] = value;
+      memory[address.toString()] = value;
     }
   }
 }
 
-
-console.log(
-  Object.values(memory).reduce(
-    (acc, current) => acc + current,
-    0,
-  ),
-);
+console.log(Object.values(memory).reduce((acc, current) => acc + current, 0));

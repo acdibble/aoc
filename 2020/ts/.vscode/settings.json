@@ -8,5 +8,6 @@
   },
   "deno.import_intellisense_origins": {
     "https://deno.land": true
-  }
+  },
+  "python.pythonPath": "/usr/local/bin/python3"
 }
