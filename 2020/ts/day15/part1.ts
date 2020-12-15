@@ -4,16 +4,19 @@ export const findNthNumber = (inputNumbers: number[], n: number): number => {
   const input = [...inputNumbers];
   let previousNumber = input.pop()!;
 
-  const numberMap = new Map(input.map((n, i) => [n, i]));
+  const numberMap = new Int32Array(3e7).fill(-1);
+  input.forEach((n, i) => {
+    numberMap[Number(n)] = i;
+  });
 
   for (
     let currentIndex = input.length;
     currentIndex < n - 1;
     currentIndex++
   ) {
-    const temp = numberMap.get(previousNumber);
-    numberMap.set(previousNumber, currentIndex);
-    previousNumber = temp === undefined ? 0 : currentIndex - temp;
+    const temp = numberMap[previousNumber];
+    numberMap[previousNumber] = currentIndex;
+    previousNumber = temp === -1 ? 0 : currentIndex - temp;
   }
 
   return previousNumber;
