@@ -1,17 +1,15 @@
-import { readFile } from "../utils.ts";
-
-class GoodSet<T> extends Set<T> {
-  intersection(other: GoodSet<T> | null) {
-    if (other === null) return this;
-    return new GoodSet<T>([...this].filter((val) => other.has(val)));
-  }
-}
+import { GoodSet, readFile } from "../utils.ts";
 
 const sum = (await readFile(import.meta.url)).split("\n\n").reduce(
   (total, group) =>
     total +
-    group.split("\n").reduce<GoodSet<string> | null>((acc, member) =>
-      new GoodSet(member).intersection(acc), null)!.size,
+    group.split("\n").reduce<GoodSet<string> | null>(
+      (acc, member) =>
+        acc === null
+          ? new GoodSet(member)
+          : new GoodSet(member).intersection(acc),
+      null,
+    )!.size,
   0,
 );
 
