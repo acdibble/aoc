@@ -21,16 +21,15 @@ const tickets: number[][] = [...ticketInfo.matchAll(/\n([\d,]+)/g)]
   .map(([, match]) => match.split(",").map(Number))
   .filter((ticket) => ticket.every((num) => validNumbers.has(num)));
 
-const ticketSets = tickets
-  .map((line) =>
-    line.reduce<Record<number, GoodSet<string>>>((acc, number, i) => {
-      acc[i] = Object.entries(typeSet).reduce((acc, [key, set]) => {
-        if (set.has(number)) acc.add(key);
-        return acc;
-      }, new GoodSet<string>());
-      return acc;
-    }, {})
-  );
+const ticketSets = tickets.map((line) =>
+  line.reduce<Record<number, GoodSet<string>>>((acc, number, i) => {
+    acc[i] = Object.entries(typeSet).reduce((acc2, [key, set]) => {
+      if (set.has(number)) acc2.add(key);
+      return acc2;
+    }, new GoodSet<string>());
+    return acc;
+  }, {})
+);
 
 const myTicket = tickets[0];
 
