@@ -2,12 +2,9 @@ import { readFile } from "../utils.ts";
 
 type Tile = "#" | "." | "L";
 
-const seats = (await readFile(import.meta.url)).split("\n").map((line) =>
+let seats = (await readFile(import.meta.url)).split("\n").map((line) =>
   line.split("")
 ) as Tile[][];
-
-const cloneSeats = (tiles: Tile[][]): Tile[][] =>
-  tiles.map((line) => [...line]);
 
 const neighbors = [
   [-1, -1],
@@ -23,6 +20,7 @@ const neighbors = [
 const getNewValue = (board: Tile[][], x: number, y: number): Tile => {
   const current = board[y][x];
   if (current === ".") return ".";
+
   const occupiedSeats = neighbors.reduce(
     (acc, [xOffset, yOffset]) =>
       acc + Number(board[y + yOffset]?.[x + xOffset] === "#"),
@@ -35,23 +33,19 @@ const getNewValue = (board: Tile[][], x: number, y: number): Tile => {
 };
 
 let aSeatChanged = true;
-let currentSeats = cloneSeats(seats);
-let iteration: number;
+let result = 0;
 
-for (iteration = 0; aSeatChanged; iteration += 1) {
+for (let iteration = 0; aSeatChanged; iteration += 1) {
+  result = 0;
   aSeatChanged = false;
-  const nextSeats = cloneSeats(currentSeats);
-
-  for (let y = 0; y < currentSeats.length; y += 1) {
-    for (let x = 0; x < currentSeats[y].length; x += 1) {
-      nextSeats[y][x] = getNewValue(currentSeats, x, y);
-      aSeatChanged ||= nextSeats[y][x] !== currentSeats[y][x];
-    }
-  }
-
-  currentSeats = nextSeats;
+  seats = seats.map((line, y) =>
+    line.map((oldChar, x) => {
+      const newChar = getNewValue(seats, x, y);
+      aSeatChanged ||= newChar !== oldChar;
+      result += Number(newChar === "#");
+      return newChar;
+    })
+  );
 }
 
-console.log(
-  currentSeats.map((line) => line.join("")).join("").match(/#/g)?.length,
-);
+console.log(result);
