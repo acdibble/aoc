@@ -1,4 +1,3 @@
-import { unreachable } from "https://deno.land/std@0.79.0/testing/asserts.ts";
 import { readFile } from "../utils.ts";
 
 enum Direction {
@@ -9,9 +8,24 @@ enum Direction {
   None,
 }
 
-class Tile {
+const isOpposite = (a: Direction, b: Direction) => (a + 2) % 4 === b;
+const aRightOfB = (a: Direction, b: Direction) => (a + 3) % 4 === b;
+const aLeftOfB = (a: Direction, b: Direction) => (a + 1) % 4 === b;
+const neighbors = ["top", "right", "bottom", "left"] as const;
+
+export const rotateImage = (data: string[]): string[] => {
+  const newData = data.map(() => "");
+  for (let i = data.length - 1; i >= 0; i--) {
+    for (let j = 0; j < data[i].length; j++) {
+      newData[j] += data[i][j];
+    }
+  }
+  return newData;
+};
+
+export class Tile {
   readonly name: string;
-  private data: string[];
+  data: string[];
   private readonly edges: string[] = new Array(4);
   private readonly invertedEdges: string[] = new Array(4);
 
@@ -30,7 +44,6 @@ class Tile {
   }
 
   neighborCount(): number {
-    const neighbors = ["top", "right", "bottom", "left"] as const;
     return neighbors.reduce((acc, n) => acc + Number(this[n] != null), 0);
   }
 
@@ -56,13 +69,7 @@ class Tile {
   }
 
   private rotateData(): void {
-    const newData = this.data.map(() => "");
-    for (let i = this.data.length - 1; i >= 0; i--) {
-      for (let j = 0; j < this.data[i].length; j++) {
-        newData[j] += this.data[i][j];
-      }
-    }
-    this.data = newData;
+    this.data = rotateImage(this.data);
   }
 
   private rotate(): Tile {
@@ -87,11 +94,6 @@ class Tile {
     );
   }
 
-  private printData(): void {
-    console.log(this.data.join("\n"));
-    console.log();
-  }
-
   private setLeftRight(other: Tile, dir: "left" | "right"): void {
     const otherDir = dir === "right" ? "left" : "right";
     this[dir] = other;
@@ -104,14 +106,6 @@ class Tile {
       other.bottom = this.bottom[dir];
     }
     other[otherDir] = this;
-  }
-
-  private setLeft(other: Tile): void {
-    return this.setLeftRight(other, "left");
-  }
-
-  private setRight(other: Tile): void {
-    return this.setLeftRight(other, "right");
   }
 
   private setTopBottom(other: Tile, dir: "top" | "bottom"): void {
@@ -128,24 +122,16 @@ class Tile {
     other[otherDir] = this;
   }
 
-  private setTop(other: Tile): void {
-    return this.setTopBottom(other, "top");
-  }
-
-  private setBottom(other: Tile): void {
-    return this.setTopBottom(other, "bottom");
-  }
-
-  private debug(other: Tile): never {
-    this.printData();
-    other.printData();
-    unreachable();
+  private set(other: Tile, direction: Direction): void {
+    if (direction === Direction.Top) return this.setTopBottom(other, "top");
+    if (direction === Direction.Bottom) {
+      return this.setTopBottom(other, "bottom");
+    }
+    if (direction === Direction.Left) return this.setLeftRight(other, "left");
+    if (direction === Direction.Right) return this.setLeftRight(other, "right");
   }
 
   makeFit(other: Tile): void {
-    if (this.name === "2099") {
-      console.log(other.name);
-    }
     const thisSide: Direction = this.edges.findIndex((edge) =>
       other.edges.includes(edge) || other.invertedEdges.includes(edge)
     );
@@ -153,136 +139,82 @@ class Tile {
       .findIndex((edge) => edge === this.edges[thisSide]);
 
     if (otherSide !== -1) {
-      if (thisSide === Direction.Top) {
-        if (otherSide === Direction.Top) {
-          other.flip("horizontal");
-        } else if (otherSide === Direction.Left) {
-          other.rotate().rotate().rotate();
-        } else if (otherSide === Direction.Right) {
-          unreachable();
-        }
-        return this.setTop(other);
-      }
-
-      if (thisSide === Direction.Bottom) {
-        if (otherSide === Direction.Right) {
-          other.rotate().rotate().rotate();
-        } else if (otherSide === Direction.Bottom) {
-          other.flip("horizontal");
-        } else if (otherSide === Direction.Left) {
-          unreachable();
-        }
-        return this.setBottom(other);
-      }
-
-      if (thisSide === Direction.Left) {
-        if (otherSide === Direction.Top) {
-          other.rotate();
-        } else if (otherSide === Direction.Left) {
-          other.flip("vertical");
-        } else if (otherSide === Direction.Bottom) {
-          unreachable();
-        }
-        return this.setLeft(other);
-      }
-
-      if (thisSide === Direction.Right) {
-        if (otherSide === Direction.Bottom) {
-          other.rotate();
-        } else if (otherSide === Direction.Right) {
-          other.flip("vertical");
-        } else if (otherSide === Direction.Top) {
-          unreachable();
-        }
-        return this.setRight(other);
-      }
-
-      unreachable();
-    }
-
-    otherSide = other.invertedEdges
-      .findIndex((edge) => edge === this.edges[thisSide]);
-
-    if (thisSide === Direction.Right) {
-      if (otherSide === Direction.Right) {
-        other.rotate().rotate();
-      } else if (otherSide === Direction.Left) {
-        other.flip("horizontal");
-      } else if (otherSide === Direction.Bottom) {
-        other.rotate().flip("horizontal");
-      } else if (otherSide === Direction.Top) {
+      if (thisSide === otherSide) {
+        const type = thisSide === Direction.Top || thisSide === Direction.Bottom
+          ? "horizontal"
+          : "vertical";
+        other.flip(type);
+      } else if (aLeftOfB(otherSide, thisSide)) {
         other.rotate().rotate().rotate();
-      }
-      return this.setRight(other);
-    }
-
-    if (thisSide === Direction.Top) {
-      if (otherSide === Direction.Left) {
-        other.rotate().rotate().rotate().flip("vertical");
-      } else if (otherSide === Direction.Bottom) {
-        other.flip("vertical");
-      } else if (otherSide === Direction.Right) {
+      } else if (aRightOfB(otherSide, thisSide)) {
         other.rotate();
-      } else if (otherSide === Direction.Top) {
-        other.rotate().rotate();
       }
-      return this.setTop(other);
+    } else {
+      otherSide = other.invertedEdges
+        .findIndex((edge) => edge === this.edges[thisSide]);
+
+      if (thisSide === otherSide) {
+        other.rotate().rotate();
+      } else if (isOpposite(thisSide, otherSide)) {
+        const type = thisSide === Direction.Top || thisSide === Direction.Bottom
+          ? "vertical"
+          : "horizontal";
+        other.flip(type);
+      } else if (thisSide === Direction.Right || thisSide === Direction.Left) {
+        if (aRightOfB(otherSide, thisSide)) {
+          other.rotate().flip("horizontal");
+        } else if (aLeftOfB(otherSide, thisSide)) {
+          other.rotate().rotate().rotate();
+        }
+      } else if (thisSide === Direction.Top || thisSide === Direction.Bottom) {
+        if (aLeftOfB(otherSide, thisSide)) {
+          other.flip("vertical").rotate();
+        } else if (aRightOfB(otherSide, thisSide)) {
+          other.rotate();
+        }
+      }
     }
 
-    if (thisSide === Direction.Bottom) {
-      if (otherSide === Direction.Bottom) {
-        other.rotate().rotate();
-      } else if (otherSide === Direction.Left) {
-        other.rotate();
-      } else if (otherSide === Direction.Top) {
-        other.flip("vertical");
-      } else if (otherSide === Direction.Right) {
-        other.flip("vertical").rotate();
-      }
-      return this.setBottom(other);
-    }
-
-    if (thisSide === Direction.Left) {
-      if (otherSide === Direction.Top) {
-        other.rotate().flip("horizontal");
-      } else if (otherSide === Direction.Left) {
-        other.rotate().rotate();
-      } else if (otherSide === Direction.Bottom) {
-        other.rotate().rotate().rotate();
-      } else if (otherSide === Direction.Right) {
-        other.flip("horizontal");
-      }
-      return this.setLeft(other);
-    }
-
-    unreachable();
+    return this.set(other, thisSide);
   }
 }
 
-const unplacedTiles = (await readFile(import.meta.url)).split("\n\n")
-  .map((tile) => new Tile(tile));
+export const linkTiles = async () => {
+  const unplacedTiles = (await readFile(import.meta.url)).split("\n\n")
+    .map((tile) => new Tile(tile));
 
-const placedTiles: Tile[] = [unplacedTiles.shift()!];
+  const placedTiles: Tile[] = [unplacedTiles.shift()!];
 
-for (
-  let unplaced = unplacedTiles.shift();
-  unplaced;
-  unplaced = unplacedTiles.shift()
-) {
-  const matches = placedTiles.filter((tile) => tile.someMatch(unplaced!));
-  if (!matches.length) {
-    unplacedTiles.push(unplaced);
-  } else {
-    matches.forEach((match) => match.makeFit(unplaced!));
-    placedTiles.push(unplaced);
+  for (
+    let unplaced = unplacedTiles.shift();
+    unplaced;
+    unplaced = unplacedTiles.shift()
+  ) {
+    const matches = placedTiles.filter((tile) => tile.someMatch(unplaced!));
+    if (!matches.length) {
+      unplacedTiles.push(unplaced);
+    } else {
+      matches.forEach((match) => match.makeFit(unplaced!));
+      placedTiles.push(unplaced);
+    }
   }
-}
 
-console.log(
-  placedTiles.filter((t) => {
-    const dirs = ["top", "bottom", "left", "right"] as const;
+  return placedTiles;
+};
+
+export const findCorners = (tiles: Tile[]): Tile[] =>
+  tiles.filter((t) => {
     return t.neighborCount() === 2 &&
       // some bug :shrug:
-      dirs.every((dir) => (t[dir]?.neighborCount() ?? 3) === 3);
-  }).map((t) => t.name).reduce((acc, num) => acc * Number(num), 1),
-);
+      neighbors.every((n) => (t[n]?.neighborCount() ?? 3) === 3);
+  });
+
+if (import.meta.main) {
+  const tiles = await linkTiles();
+  console.log(
+    findCorners(tiles).map((t) => t.name).reduce(
+      (acc, num) => acc * Number(num),
+      1,
+    ),
+  );
+}
