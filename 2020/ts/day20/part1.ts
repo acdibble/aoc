@@ -9,14 +9,6 @@ enum Direction {
   None,
 }
 
-const stringMap = {
-  [Direction.Top]: "top",
-  [Direction.Right]: "right",
-  [Direction.Bottom]: "bottom",
-  [Direction.Left]: "left",
-  [Direction.None]: "none",
-} as const;
-
 class Tile {
   readonly name: string;
   private data: string[];
@@ -144,187 +136,126 @@ class Tile {
     return this.setTopBottom(other, "bottom");
   }
 
-  debug(other: Tile): never {
+  private debug(other: Tile): never {
     this.printData();
     other.printData();
     unreachable();
   }
 
-  makeFit(other: Tile): boolean {
-    this.printData();
-    other.printData();
+  makeFit(other: Tile): void {
+    if (this.name === "2099") {
+      console.log(other.name);
+    }
     const thisSide: Direction = this.edges.findIndex((edge) =>
       other.edges.includes(edge) || other.invertedEdges.includes(edge)
     );
-    let otherSide: Direction | -1 = other.edges.findIndex((edge) =>
-      edge === this.edges[thisSide]
-    );
+    let otherSide: Direction | -1 = other.edges
+      .findIndex((edge) => edge === this.edges[thisSide]);
 
     if (otherSide !== -1) {
-      console.log(stringMap[thisSide]);
-      console.log(stringMap[otherSide]);
-      if (thisSide === Direction.Top && otherSide === Direction.Top) {
+      if (thisSide === Direction.Top) {
+        if (otherSide === Direction.Top) {
+          other.flip("horizontal");
+        } else if (otherSide === Direction.Left) {
+          other.rotate().rotate().rotate();
+        } else if (otherSide === Direction.Right) {
+          unreachable();
+        }
+        return this.setTop(other);
+      }
+
+      if (thisSide === Direction.Bottom) {
+        if (otherSide === Direction.Right) {
+          other.rotate().rotate().rotate();
+        } else if (otherSide === Direction.Bottom) {
+          other.flip("horizontal");
+        } else if (otherSide === Direction.Left) {
+          unreachable();
+        }
+        return this.setBottom(other);
+      }
+
+      if (thisSide === Direction.Left) {
+        if (otherSide === Direction.Top) {
+          other.rotate();
+        } else if (otherSide === Direction.Left) {
+          other.flip("vertical");
+        } else if (otherSide === Direction.Bottom) {
+          unreachable();
+        }
+        return this.setLeft(other);
+      }
+
+      if (thisSide === Direction.Right) {
+        if (otherSide === Direction.Bottom) {
+          other.rotate();
+        } else if (otherSide === Direction.Right) {
+          other.flip("vertical");
+        } else if (otherSide === Direction.Top) {
+          unreachable();
+        }
+        return this.setRight(other);
+      }
+
+      unreachable();
+    }
+
+    otherSide = other.invertedEdges
+      .findIndex((edge) => edge === this.edges[thisSide]);
+
+    if (thisSide === Direction.Right) {
+      if (otherSide === Direction.Right) {
+        other.rotate().rotate();
+      } else if (otherSide === Direction.Left) {
         other.flip("horizontal");
-        otherSide = Direction.Bottom;
-      }
-
-      // @ts-expect-error ????
-      if (thisSide === Direction.Top && otherSide === Direction.Left) {
+      } else if (otherSide === Direction.Bottom) {
+        other.rotate().flip("horizontal");
+      } else if (otherSide === Direction.Top) {
         other.rotate().rotate().rotate();
-        otherSide = Direction.Bottom;
       }
-      // @ts-expect-error ????
-      if (thisSide === Direction.Bottom && otherSide === Direction.Right) {
+      return this.setRight(other);
+    }
+
+    if (thisSide === Direction.Top) {
+      if (otherSide === Direction.Left) {
+        other.rotate().rotate().rotate().flip("vertical");
+      } else if (otherSide === Direction.Bottom) {
+        other.flip("vertical");
+      } else if (otherSide === Direction.Right) {
+        other.rotate();
+      } else if (otherSide === Direction.Top) {
+        other.rotate().rotate();
+      }
+      return this.setTop(other);
+    }
+
+    if (thisSide === Direction.Bottom) {
+      if (otherSide === Direction.Bottom) {
+        other.rotate().rotate();
+      } else if (otherSide === Direction.Left) {
+        other.rotate();
+      } else if (otherSide === Direction.Top) {
+        other.flip("vertical");
+      } else if (otherSide === Direction.Right) {
+        other.flip("vertical").rotate();
+      }
+      return this.setBottom(other);
+    }
+
+    if (thisSide === Direction.Left) {
+      if (otherSide === Direction.Top) {
+        other.rotate().flip("horizontal");
+      } else if (otherSide === Direction.Left) {
+        other.rotate().rotate();
+      } else if (otherSide === Direction.Bottom) {
         other.rotate().rotate().rotate();
-        otherSide = Direction.Top;
-      }
-
-      if (thisSide === Direction.Right && otherSide === Direction.Bottom) {
-        other.rotate();
-        otherSide = Direction.Left;
-      }
-
-      if (thisSide === Direction.Left && otherSide === Direction.Top) {
-        other.rotate();
-        otherSide = Direction.Right;
-      }
-
-      if (thisSide === Direction.Right && otherSide === Direction.Right) {
-        other.flip("vertical");
-        otherSide = Direction.Left;
-      }
-
-      if (thisSide === Direction.Left && otherSide === Direction.Left) {
-        other.flip("vertical");
-        otherSide = Direction.Right;
-      }
-
-      if (thisSide === Direction.Bottom && otherSide === Direction.Bottom) {
+      } else if (otherSide === Direction.Right) {
         other.flip("horizontal");
-        otherSide = Direction.Top;
       }
-
-      if (thisSide === Direction.Right && otherSide === Direction.Left) {
-        this.setRight(other);
-        return true;
-      }
-
-      if (thisSide === Direction.Left && otherSide === Direction.Right) {
-        this.setLeft(other);
-        return true;
-      }
-      if (thisSide === Direction.Top && otherSide === Direction.Bottom) {
-        this.setTop(other);
-        return true;
-      }
-      if (thisSide === Direction.Bottom && otherSide === Direction.Top) {
-        this.setBottom(other);
-        return true;
-      }
+      return this.setLeft(other);
     }
 
-    otherSide = other.invertedEdges.findIndex((edge) =>
-      edge === this.edges[thisSide]
-    );
-    console.log("this side:", stringMap[thisSide]);
-    console.log("inv side: ", stringMap[otherSide]);
-    if (thisSide === Direction.Right && otherSide === Direction.Right) {
-      other.rotate().rotate();
-      this.setRight(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Right && otherSide === Direction.Left) {
-      other.flip("horizontal");
-      this.setRight(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Right && otherSide === Direction.Bottom) {
-      other.rotate().flip("horizontal");
-      this.setRight(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Right && otherSide === Direction.Top) {
-      other.rotate().rotate().rotate();
-      this.setRight(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Top && otherSide === Direction.Left) {
-      other.rotate().rotate().rotate().flip("vertical");
-      this.setTop(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Top && otherSide === Direction.Bottom) {
-      other.flip("vertical");
-      this.setTop(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Top && otherSide === Direction.Right) {
-      other.rotate();
-      this.setTop(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Top && otherSide === Direction.Top) {
-      other.rotate().rotate();
-      this.setTop(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Bottom && otherSide === Direction.Bottom) {
-      other.rotate().rotate();
-      this.setBottom(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Bottom && otherSide === Direction.Left) {
-      other.rotate();
-      this.setBottom(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Bottom && otherSide === Direction.Top) {
-      other.flip("vertical");
-      this.setBottom(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Bottom && otherSide === Direction.Right) {
-      other.flip("vertical").rotate();
-      this.setBottom(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Left && otherSide === Direction.Top) {
-      other.rotate().flip("horizontal");
-      this.setLeft(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Left && otherSide === Direction.Left) {
-      other.rotate().rotate();
-      this.setLeft(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Left && otherSide === Direction.Bottom) {
-      other.rotate().rotate().rotate();
-      this.setLeft(other);
-      return true;
-    }
-
-    if (thisSide === Direction.Left && otherSide === Direction.Right) {
-      other.flip("horizontal");
-      this.setLeft(other);
-      return true;
-    }
-
-    return false;
+    unreachable();
   }
 }
 
@@ -341,19 +272,17 @@ for (
   const matches = placedTiles.filter((tile) => tile.someMatch(unplaced!));
   if (!matches.length) {
     unplacedTiles.push(unplaced);
-    continue;
+  } else {
+    matches.forEach((match) => match.makeFit(unplaced!));
+    placedTiles.push(unplaced);
   }
-  console.log(matches.length);
-  if (!matches.every((match) => match.makeFit(unplaced!))) {
-    unreachable();
-  }
-  placedTiles.push(unplaced);
 }
 
 console.log(
   placedTiles.filter((t) => {
     const dirs = ["top", "bottom", "left", "right"] as const;
     return t.neighborCount() === 2 &&
+      // some bug :shrug:
       dirs.every((dir) => (t[dir]?.neighborCount() ?? 3) === 3);
   }).map((t) => t.name).reduce((acc, num) => acc * Number(num), 1),
 );
