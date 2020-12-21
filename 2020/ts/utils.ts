@@ -17,4 +17,9 @@ export class GoodSet<T> extends Set<T> {
     if (other === null) return this;
     return new GoodSet<T>([...this].filter((val) => !other.has(val)));
   }
+
+  union(other: GoodSet<T> | null): GoodSet<T> {
+    if (other === null) return this;
+    return new GoodSet<T>([...this, ...other]);
+  }
 }
