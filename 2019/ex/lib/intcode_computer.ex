@@ -21,37 +21,27 @@ defmodule IntcodeComputer do
     |> Map.new()
   end
 
-  defp run(intcodes, pointer \\ 0) do
-    case Map.fetch!(intcodes, pointer) do
-      1 ->
-        add(intcodes, pointer)
-
-      2 ->
-        mult(intcodes, pointer)
-
-      99 ->
-        {:ok, Map.fetch!(intcodes, 0)}
-
-      _ ->
-        {:error, :bad_opcode}
-    end
+  defp run({intcodes, pointer}) when is_map(intcodes) do
+    Map.fetch!(intcodes, pointer)
+    |> process(intcodes, pointer)
+    |> run()
   end
 
-  defp add(intcodes, pointer) do
-    do_op(intcodes, pointer, &Kernel.+/2, 4)
-  end
+  defp run(result) when is_tuple(result), do: result
+  defp run(intcodes) when is_map(intcodes), do: run({intcodes, 0})
 
-  defp mult(intcodes, pointer) do
-    do_op(intcodes, pointer, &Kernel.*/2, 4)
-  end
+  defp process(1, intcodes, pointer), do: do_op(intcodes, pointer, &Kernel.+/2, 4)
+  defp process(2, intcodes, pointer), do: do_op(intcodes, pointer, &Kernel.*/2, 4)
+  defp process(99, intcodes, _pointer), do: {:ok, Map.fetch!(intcodes, 0)}
+  defp process(_opcode, _intcodes, _pointer), do: {:error, :bad_opcode}
 
-  defp do_op(intcodes, pointer, op, 4) do
-    operand1 = pointer + 1
-    operand2 = pointer + 2
-    operand3 = pointer + 3
-    %{^operand1 => param1, ^operand2 => param2, ^operand3 => output} = intcodes
+  defp do_op(intcodes, pointer, op, increment) do
+    [operand1, operand2, output] = 1..3 |> Enum.map(&Map.fetch!(intcodes, pointer + &1))
 
-    Map.put(intcodes, output, op.(Map.fetch!(intcodes, param1), Map.fetch!(intcodes, param2)))
-    |> run(pointer + 4)
+    {Map.put(
+       intcodes,
+       output,
+       op.(Map.fetch!(intcodes, operand1), Map.fetch!(intcodes, operand2))
+     ), pointer + increment}
   end
 end
