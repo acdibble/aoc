@@ -1,4 +1,6 @@
 defmodule DayEleven do
+  use Agent
+
   defp load_file(path \\ "../data.txt") do
     __ENV__.file
     |> Path.dirname()
@@ -10,31 +12,43 @@ defmodule DayEleven do
     |> Enum.into(%{}, &{elem(&1, 1), elem(&1, 0)})
   end
 
+  def start_agent do
+    Agent.start_link(fn -> nil end, name: __MODULE__)
+  end
+
+  def get_cutoff do
+    Agent.get(__MODULE__, & &1)
+  end
+
+  def set_cutoff(value) do
+    Agent.update(__MODULE__, fn _state -> value end)
+  end
+
   def part_one do
+    start_agent()
+    set_cutoff(4)
+
     load_file()
     |> iterate()
+  end
+
+  def part_two do
+    start_agent()
+    set_cutoff(5)
+
+    load_file()
+    |> iterate()
+    |> elem(1)
+    |> Kernel.-(1)
   end
 
   defp iterate(board, iterations \\ 0) do
     transform_rows(board)
     |> diff_boards(board)
-    |> inspect_board()
-    # |> IO.inspect()
     |> case do
       {:stop, new_board} -> {iterations, count_occupied_seats(new_board)}
       {:cont, new_board} -> iterate(new_board, iterations + 1)
     end
-  end
-
-  defp inspect_board({atom, board}) do
-    Range.new(0, map_size(board) - 1)
-    |> Enum.reduce("", fn y, acc ->
-      "#{acc}\n#{Map.get(board, y) |> Enum.join()}"
-    end)
-
-    # |> IO.puts()
-
-    {atom, board}
   end
 
   defp count_occupied_seats(board, row \\ 0, total \\ 0)
@@ -58,8 +72,6 @@ defmodule DayEleven do
             get_new_value(current_board, char, x, y)
           end)
 
-        # IO.inspect(new_row)
-
         transform_rows(current_board, Map.put(new_board, y, new_row), y + 1)
     end
   end
@@ -67,7 +79,7 @@ defmodule DayEleven do
   defp get_new_value(_board, ".", _x, _y), do: "."
 
   defp get_new_value(board, char, x, y),
-    do: count_neighbors(0, board, x, y, -1, -1) |> convert_char(char)
+    do: count_neighbors(0, board, x, y, -1, -1) |> convert_char(char, get_cutoff())
 
   defp count_neighbors(total, _board, _x, _y, 1, 2), do: total
   defp count_neighbors(total, board, x, y, 0, 0), do: count_neighbors(total, board, x, y, 0, 1)
@@ -91,21 +103,30 @@ defmodule DayEleven do
   defp get_neighbor_value(board, _x, y, _xOffset, yOffset) when y + yOffset > map_size(board),
     do: nil
 
-  defp get_neighbor_value(board, x, y, xOffset, yOffset),
-    do:
-      Map.get(board, y + yOffset, [])
-      |> Enum.at(x + xOffset)
+  defp get_neighbor_value(board, x, y, xOffset, yOffset) do
+    case get_cutoff() do
+      4 ->
+        Map.get(board, y + yOffset, [])
+        |> Enum.at(x + xOffset)
 
-  # |> IO.inspect(label: "(#{x} + #{xOffset}, #{y} + #{yOffset})")
+      5 ->
+        Enum.reduce_while(1..map_size(board), nil, fn mul, _acc ->
+          case Map.get(board, y + mul * yOffset, []) |> Enum.at(x + mul * xOffset) do
+            "." -> {:cont, nil}
+            val -> {:halt, val}
+          end
+        end)
+    end
+  end
 
   defp convert_neighbor(nil), do: 0
   defp convert_neighbor("."), do: 0
   defp convert_neighbor("L"), do: 0
   defp convert_neighbor("#"), do: 1
 
-  defp convert_char(total, "#") when total >= 4, do: "L"
-  defp convert_char(total, "L") when total == 0, do: "#"
-  defp convert_char(_total, char), do: char
+  defp convert_char(total, "#", cutoff) when total >= cutoff, do: "L"
+  defp convert_char(total, "L", _cutoff) when total == 0, do: "#"
+  defp convert_char(_total, char, _cutoff), do: char
 
   defp diff_boards(board1, board2, row \\ 0)
   defp diff_boards(board1, _board2, row) when row == map_size(board1), do: {:stop, board1}
