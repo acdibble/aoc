@@ -1,4 +1,4 @@
-import { path } from "./deps.ts";
+import * as path from "https://deno.land/std@0.79.0/path/mod.ts";
 
 export const readFile = (url: string): Promise<string> =>
   Deno.readTextFile(
