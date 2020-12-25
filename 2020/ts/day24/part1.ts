@@ -7,7 +7,7 @@ type Direction = EastWest | `${NorthSouth}${EastWest}`;
 
 export const loadDirections = async (): Promise<Direction[][]> =>
   (await readFile(import.meta.url)).split("\n").map((directions) =>
-    directions.match(/([ns]e|[ns]w|[nsew])/g)! as Direction[]
+    directions.match(/([ns][ew]|[nsew])/g)! as Direction[]
   );
 
 export const followDirections = async (): Promise<Record<string, Color>> => {
