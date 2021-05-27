@@ -2,23 +2,67 @@ import { readFile } from "../utils.ts";
 
 const inputs = (await readFile(import.meta.url)).split("\n");
 
-const op = /(\d+ [*+] \d+)/;
-const parens = /\(([^())]+)\)/;
-
-const evalRe = (_: string, match: string): string => eval(match);
-
-const evaluate = (input: string): number => {
-  let current = input;
-
-  while (parens.test(current)) {
-    current = current.replace(parens, (_, m) => String(evaluate(m)));
+class Parser {
+  static isDigit(char: string): boolean {
+    return /\d/.test(char);
   }
 
-  while (op.test(current)) {
-    current = current.replace(op, evalRe);
+  private current = 0;
+  private readonly input: string;
+
+  constructor(input: string) {
+    this.input = input.replace(/ /g, "");
   }
 
-  return Number(current);
-};
+  private isAtEnd(): boolean {
+    return this.current === this.input.length;
+  }
 
-console.log(inputs.reduce((acc, line) => acc + evaluate(line), 0));
+  private advance(): string {
+    return this.input[this.current++];
+  }
+
+  private peek(): string {
+    return this.input[this.current];
+  }
+
+  private match(char: string): boolean {
+    if (this.peek() === char) {
+      this.advance();
+      return true;
+    }
+
+    return false;
+  }
+
+  private number(): number {
+    if (Parser.isDigit(this.peek())) {
+      return Number(this.advance());
+    } else if (this.match("(")) {
+      return this.evaluate();
+    } else {
+      throw new Error("unreachable");
+    }
+  }
+
+  evaluate(): number {
+    let total = this.number();
+
+    while (!this.isAtEnd() && !this.match(")")) {
+      const op = this.advance();
+      const number = this.number();
+
+      if (op === "+") {
+        total += number;
+      } else if (op === "*") {
+        total *= number;
+      } else {
+        throw new Error("unreachable");
+      }
+    }
+
+    return total;
+  }
+}
+
+console.log(inputs.reduce((acc, line) => acc + new Parser(line).evaluate(), 0));

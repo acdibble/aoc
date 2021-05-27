@@ -2,28 +2,81 @@ import { readFile } from "../utils.ts";
 
 const inputs = (await readFile(import.meta.url)).split("\n");
 
-const add = /(\d+ \+ \d+)/;
-const mul = /(\d+ \* \d+)/;
-const parens = /\(([^())]+)\)/;
+class Parser {
+  private current = 0;
+  private readonly input: string;
 
-const evalRe = (_: string, match: string): string => eval(match);
-
-const evaluate = (input: string): number => {
-  let current = input;
-
-  while (parens.test(current)) {
-    current = current.replace(parens, (_, m) => String(evaluate(m)));
+  constructor(input: string) {
+    this.input = input.replace(/ /g, "");
   }
 
-  while (add.test(current)) {
-    current = current.replace(add, evalRe);
+  private isAtEnd(): boolean {
+    return this.current === this.input.length;
   }
 
-  while (mul.test(current)) {
-    current = current.replace(mul, evalRe);
+  private advance(): string {
+    return this.input[this.current++];
   }
 
-  return Number(current);
-};
+  private peek(): string {
+    return this.input[this.current];
+  }
 
-console.log(inputs.reduce((acc, line) => acc + evaluate(line), 0));
+  private consume(char: string): void {
+    if (!this.match(char)) {
+      throw new Error(`expected '${char}', got '${this.peek()}'.`);
+    }
+  }
+
+  private check(arg0: RegExp | string): boolean {
+    if (this.isAtEnd()) return false;
+    return arg0 instanceof RegExp
+      ? arg0.test(this.peek())
+      : this.peek() === arg0;
+  }
+
+  private match(char: string): boolean {
+    if (!this.isAtEnd() && this.peek() === char) {
+      this.advance();
+      return true;
+    }
+
+    return false;
+  }
+
+  private number(): number {
+    let number: number;
+    if (this.check(/\d/)) {
+      number = Number(this.advance());
+    } else if (this.match("(")) {
+      number = this.evaluate();
+      this.consume(")");
+    } else {
+      throw new Error("unreachable");
+    }
+
+    return number;
+  }
+
+  private sum(): number {
+    let number = this.number();
+
+    while (this.match("+")) number += this.number();
+
+    return number;
+  }
+
+  private product(): number {
+    let number = this.sum();
+
+    while (this.match("*")) number *= this.sum();
+
+    return number;
+  }
+
+  evaluate(): number {
+    return this.product();
+  }
+}
+
+console.log(inputs.reduce((acc, line) => acc + new Parser(line).evaluate(), 0));
