@@ -47,10 +47,6 @@ impl Effect {
         match self.0 {
             Spell::Shield => {
                 if self.1 == 0 {
-                    #[cfg(debug_assertions)]
-                    {
-                        println!("Shield wears off, decreasing armor by 7")
-                    }
                     player.armor -= 7;
                 }
             }
@@ -65,31 +61,12 @@ impl Effect {
     }
 }
 
-impl Effect {
-    #[cfg(debug_assertions)]
-    fn print(&self) {
-        match self.0 {
-            Spell::Shield => println!("Shield's timer is now {}.", self.1),
-            Spell::Poison => println!("Poison deals 3 damage; its timer is now {}.", self.1),
-            Spell::Recharge => println!("Recharge provides 101 mana; its timer is now {}", self.1),
-            _ => unreachable!(),
-        }
-    }
-}
-
 impl Person {
     fn attack(&self, other: &mut Self) {
         let damage = match self.damage.saturating_sub(other.armor) {
             0 => 1,
             n => n,
         };
-        #[cfg(debug_assertions)]
-        {
-            println!(
-                "Boss attacks for {} - {} = {} damage!",
-                self.damage, other.armor, damage
-            );
-        }
         other.hp = other.hp.saturating_sub(damage)
     }
 
@@ -102,44 +79,20 @@ impl Person {
 
         match spell {
             Spell::MagicMissile => {
-                #[cfg(debug_assertions)]
-                {
-                    println!("Player casts Magic Missile, dealing 4 damage.")
-                }
                 cost = 53;
                 boss.hp = boss.hp.saturating_sub(4);
             }
             Spell::Drain => {
-                #[cfg(debug_assertions)]
-                {
-                    println!("Player casts Drain, dealing 2 damage, and healing 2 hit points.")
-                }
                 cost = 73;
                 self.hp += 2;
                 boss.hp = boss.hp.saturating_sub(2);
             }
             Spell::Shield => {
-                #[cfg(debug_assertions)]
-                {
-                    println!("Player casts Shield, increasing armor by 7.")
-                }
                 cost = 113;
                 self.armor += 7;
             }
-            Spell::Poison => {
-                #[cfg(debug_assertions)]
-                {
-                    println!("Player casts Poison.")
-                }
-                cost = 173;
-            }
-            Spell::Recharge => {
-                {
-                    #[cfg(debug_assertions)]
-                    println!("Player casts Recharge.")
-                }
-                cost = 229;
-            }
+            Spell::Poison => cost = 173,
+            Spell::Recharge => cost = 229,
         }
 
         if self.mana < cost {
@@ -173,43 +126,20 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
 
     while let Some(battle) = queue.pop_front() {
         let (mut player, mut boss, current_spell, mut effects, mut mana_expended) = battle;
-        #[cfg(debug_assertions)]
-        {
-            println!("");
-            println!("-- Player turn --");
-            println!(
-                "- Player has {} hit points, {} armor, {} mana",
-                player.hp, player.armor, player.mana
-            );
-            println!("- Boss has {} hit points", boss.hp);
-        }
 
         if hard_mode {
             player.hp -= 1;
 
             if !player.is_alive() {
-                #[cfg(debug_assertions)]
-                {
-                    println!("Hard mode claims player");
-                }
-
                 continue;
             }
         }
 
         for effect in &mut effects {
-            #[cfg(debug_assertions)]
-            {
-                effect.print();
-            }
             effect.run(&mut player, &mut boss);
         }
 
         if !boss.is_alive() {
-            #[cfg(debug_assertions)]
-            {
-                println!("This kills the boss, and the player wins.")
-            }
             minimum_mana = std::cmp::min(minimum_mana, mana_expended);
             continue;
         }
@@ -219,68 +149,32 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
         let spell = SPELLBOOK[current_spell];
 
         if effects.iter().any(|eff| eff.0 == spell) {
-            #[cfg(debug_assertions)]
-            {
-                println!("Spell already in effect, ending branch.")
-            }
             continue;
         }
 
-        let cast_result = player.cast(spell, &mut boss);
-
-        match cast_result {
+        mana_expended += match player.cast(spell, &mut boss) {
             Ok((Some(effect), cost)) => {
                 effects.push(effect);
-                mana_expended += cost
+                cost
             }
-            Ok((None, cost)) => mana_expended += cost,
-            Err(()) => {
-                #[cfg(debug_assertions)]
-                {
-                    println!("The player does not have enough mana and loses.");
-                }
-
-                continue;
-            }
-        }
+            Ok((None, cost)) => cost,
+            Err(()) => continue,
+        };
 
         if mana_expended >= minimum_mana {
             continue;
         }
 
         if !boss.is_alive() {
-            #[cfg(debug_assertions)]
-            {
-                println!("This kills the boss, and the player wins.")
-            }
             minimum_mana = std::cmp::min(minimum_mana, mana_expended);
             continue;
         }
 
-        #[cfg(debug_assertions)]
-        {
-            println!("");
-            println!("-- Boss turn --");
-            println!(
-                "- Player has {} hit points, {} armor, {} mana",
-                player.hp, player.armor, player.mana
-            );
-            println!("- Boss has {} hit points", boss.hp);
-        }
-
         for effect in &mut effects {
-            #[cfg(debug_assertions)]
-            {
-                effect.print();
-            }
             effect.run(&mut player, &mut boss);
         }
 
         if !boss.is_alive() {
-            #[cfg(debug_assertions)]
-            {
-                println!("This kills the boss, and the player wins.")
-            }
             minimum_mana = std::cmp::min(minimum_mana, mana_expended);
             continue;
         }
@@ -290,10 +184,6 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
         boss.attack(&mut player);
 
         if !player.is_alive() {
-            #[cfg(debug_assertions)]
-            {
-                println!("This kills the player, and the boss wins.")
-            }
             continue;
         }
 
@@ -334,7 +224,10 @@ fn parse_boss(input: &String) -> Person {
     }
 }
 
-fn time_it(fun: &dyn Fn() -> ()) {
+fn time_it<F>(fun: F)
+where
+    F: Fn() -> (),
+{
     let start = SystemTime::now();
     fun();
     println!("Time elapsed: {} ms", start.elapsed().unwrap().as_millis())
@@ -346,8 +239,8 @@ fn main() -> std::io::Result<()> {
 
     let boss = parse_boss(&input);
 
-    time_it(&|| println!("part 1: {}", part_one(boss)));
-    time_it(&|| println!("part 2: {}", part_two(boss)));
+    time_it(|| println!("part 1: {}", part_one(boss)));
+    time_it(|| println!("part 2: {}", part_two(boss)));
 
     Ok(())
 }
