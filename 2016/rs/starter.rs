@@ -11,13 +11,14 @@ fn part_two(input: &String) -> i32 {
     0
 }
 
-fn time_it<F>(fun: F)
+fn time_it<F, T>(fun: F) -> T
 where
-    F: Fn() -> (),
+    F: Fn() -> T,
 {
     let start = SystemTime::now();
-    fun();
-    println!("Time elapsed: {} µs", start.elapsed().unwrap().as_micros())
+    let result = fun();
+    println!("Time elapsed: {} µs", start.elapsed().unwrap().as_micros());
+    result
 }
 
 fn main() -> std::io::Result<()> {
