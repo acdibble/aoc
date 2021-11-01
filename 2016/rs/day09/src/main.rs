@@ -3,82 +3,72 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-fn decompress(line: &str) -> String {
-    let mut chars = line.chars();
+fn calculate_decompressed_length(input: &str, recurse: bool) -> usize {
+    let mut len = 0;
 
-    let mut buffer = String::new();
-    let mut output = String::new();
+    let mut chars = input.char_indices();
 
     let mut length_buffer = String::new();
     let mut repeat_amount_buffer = String::new();
 
-    while let Some(c) = chars.next() {
+    while let Some((_, c)) = chars.next() {
         match c {
             '(' => {
-                loop {
-                    match chars.next().unwrap() {
-                        'x' => break,
+                let length = loop {
+                    match chars.next().unwrap().1 {
+                        'x' => break length_buffer.parse().unwrap(),
                         num => length_buffer.push(num),
                     }
-                }
+                };
 
-                let length = length_buffer.parse().unwrap();
-
-                loop {
+                let (start_index, repeat_amount) = loop {
                     match chars.next().unwrap() {
-                        ')' => break,
-                        num => repeat_amount_buffer.push(num),
+                        (i, ')') => break (i + 1, repeat_amount_buffer.parse::<usize>().unwrap()),
+                        (_, num) => repeat_amount_buffer.push(num),
                     }
-                }
-
-                let repeat_amount = repeat_amount_buffer.parse().unwrap();
+                };
 
                 for _ in 0..length {
-                    match chars.next() {
-                        Some(c) => buffer.push(c),
-                        None => panic!(),
-                    }
+                    chars.next();
                 }
 
-                output.push_str(buffer.repeat(repeat_amount).as_str());
+                if recurse {
+                    len += calculate_decompressed_length(
+                        &input[start_index..start_index + length],
+                        true,
+                    ) * repeat_amount;
+                } else {
+                    len += length * repeat_amount
+                }
 
-                buffer.clear();
                 length_buffer.clear();
                 repeat_amount_buffer.clear();
             }
-            _ => output.push(c),
+            _ => len += 1,
         }
     }
 
-    output
+    len
 }
 
 #[test]
-fn test_decompress() -> std::io::Result<()> {
-    assert_eq!(decompress("ADVENT"), "ADVENT");
-    assert_eq!(decompress("A(1x5)BC"), "ABBBBBC");
-    assert_eq!(decompress("(3x3)XYZ"), "XYZXYZXYZ");
-    assert_eq!(decompress("A(2x2)BCD(2x2)EFG"), "ABCBCDEFEFG");
-    assert_eq!(decompress("(6x1)(1x3)A"), "(1x3)A");
-    assert_eq!(decompress("X(8x2)(3x3)ABCY"), "X(3x3)ABC(3x3)ABCY");
-    assert_eq!(
-        decompress(decompress("X(8x2)(3x3)ABCY").as_str()),
-        "XABCABCABCABCABCABCY"
-    );
+fn test_calculate_decompressed_length() -> std::io::Result<()> {
+    assert_eq!(calculate_decompressed_length("ADVENT", true), 6);
+    assert_eq!(calculate_decompressed_length("A(1x5)BC", true), 7);
+    assert_eq!(calculate_decompressed_length("(3x3)XYZ", true), 9);
+    assert_eq!(calculate_decompressed_length("A(2x2)BCD(2x2)EFG", true), 11);
+    assert_eq!(calculate_decompressed_length("(6x1)(1x3)A", true), 3);
+    assert_eq!(calculate_decompressed_length("X(8x2)(3x3)ABCY", true), 20);
+    assert_eq!(calculate_decompressed_length("X(8x2)(3x3)ABCY", false), 18);
     Ok(())
 }
 
 fn part_one(input: &String) -> usize {
-    decompress(input.as_str()).len()
+    calculate_decompressed_length(input.as_str(), false)
 }
 
 fn part_two(input: &String) -> usize {
-    let mut result = input.clone();
-    while result.contains("(") {
-        result = decompress(result.as_str());
-    }
-
-    result.len()
+    calculate_decompressed_length(input.as_str(), true)
 }
 
 fn time_it<F, T>(fun: F) -> T
