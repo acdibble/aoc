@@ -4,10 +4,21 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 enum Direction {
     Left,
     Right,
+}
+
+impl std::ops::Not for Direction {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Direction::Left => Direction::Right,
+            _ => Direction::Left,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -84,136 +95,129 @@ fn calculate_rotations(index: usize, length: usize) -> usize {
     (1 + index + if index >= 4 { 1 } else { 0 }) % length
 }
 
-fn part_one(instructions: &Vec<Instruction>, password: &str) -> String {
-    let mut output: VecDeque<char> = password.chars().collect();
+struct Password {
+    buffer: VecDeque<char>,
+    rotations: Vec<usize>,
+}
 
-    let rotations: Vec<_> = (0..output.len())
-        .map(|n| calculate_rotations(n, output.len()))
-        .collect();
+impl Password {
+    fn from(string: &str, rotations: Option<Vec<usize>>) -> Self {
+        Self {
+            buffer: string.chars().collect(),
+            rotations: rotations.unwrap_or_else(|| {
+                (0..string.len())
+                    .map(|n| calculate_rotations(n, string.len()))
+                    .collect()
+            }),
+        }
+    }
 
-    for instruction in instructions {
-        match instruction {
-            Instruction::SwapPosition(source, dest) => output.swap(*source, *dest),
-            Instruction::SwapLetter(a, b) => {
-                let mut source = None;
-                let mut dest = None;
-                for (index, c) in output.iter().enumerate() {
-                    if *a == *c {
-                        source = Some(index);
-                    } else if *b == *c {
-                        dest = Some(index);
-                    }
-                    if source.is_some() && dest.is_some() {
-                        break;
-                    }
-                }
-                output.swap(source.unwrap(), dest.unwrap())
+    fn swap_chars(&mut self, a: char, b: char) {
+        let mut source = None;
+        let mut dest = None;
+        for (index, c) in self.buffer.iter().enumerate() {
+            if a == *c {
+                source = Some(index);
+            } else if b == *c {
+                dest = Some(index);
             }
-            Instruction::Reverse(start, end) => {
-                for i in 0..(*end - *start) / 2 + 1 {
-                    output.swap(*start + i, *end - i);
+
+            match (source, dest) {
+                (Some(source), Some(dest)) => {
+                    self.buffer.swap(source, dest);
+                    return;
                 }
-            }
-            Instruction::Rotate(direction, amount) => match direction {
-                Direction::Left => {
-                    for _ in 0..*amount {
-                        let temp = output.pop_front().unwrap();
-                        output.push_back(temp);
-                    }
-                }
-                Direction::Right => {
-                    for _ in 0..*amount {
-                        let temp = output.pop_back().unwrap();
-                        output.push_front(temp);
-                    }
-                }
-            },
-            Instruction::Move(source, dest) => {
-                let temp = output.remove(*source).unwrap();
-                output.insert(*dest, temp);
-            }
-            Instruction::RotateAt(c) => {
-                let index = output.iter().position(|letter| letter == c).unwrap();
-                for _ in 0..rotations[index] {
-                    let temp = output.pop_back().unwrap();
-                    output.push_front(temp);
-                }
+                _ => (),
             }
         }
     }
 
-    output.into_iter().collect()
+    fn swap_indices(&mut self, a: usize, b: usize) {
+        self.buffer.swap(a, b);
+    }
+
+    fn reverse_range(&mut self, start: usize, end: usize) {
+        for i in 0..(end - start) / 2 + 1 {
+            self.buffer.swap(start + i, end - i);
+        }
+    }
+
+    fn rotate(&mut self, direction: Direction, amount: usize) {
+        let amount = match direction {
+            Direction::Right => self.buffer.len() - amount,
+            _ => amount,
+        };
+        for _ in 0..amount {
+            let temp = self.buffer.pop_front().unwrap();
+            self.buffer.push_back(temp);
+        }
+    }
+
+    fn move_char(&mut self, src: usize, dest: usize) {
+        let temp = self.buffer.remove(src).unwrap();
+        self.buffer.insert(dest, temp);
+    }
+
+    fn rotate_char(&mut self, direction: Direction, c: char) {
+        let index = self.buffer.iter().position(|letter| *letter == c).unwrap();
+        let amount = self.rotations[index];
+        self.rotate(direction, amount)
+    }
+
+    fn to_string(&self) -> String {
+        self.buffer.iter().collect()
+    }
+}
+
+fn part_one(instructions: &Vec<Instruction>, password: &str) -> String {
+    let mut password = Password::from(password, None);
+
+    for instruction in instructions {
+        match instruction {
+            Instruction::SwapPosition(a, b) => password.swap_indices(*a, *b),
+            Instruction::SwapLetter(a, b) => password.swap_chars(*a, *b),
+            Instruction::Reverse(start, end) => password.reverse_range(*start, *end),
+            Instruction::Rotate(direction, amount) => password.rotate(*direction, *amount),
+            Instruction::Move(source, dest) => password.move_char(*source, *dest),
+            Instruction::RotateAt(c) => password.rotate_char(Direction::Right, *c),
+        }
+    }
+
+    password.to_string()
 }
 
 fn part_two(instructions: &Vec<Instruction>, password: &str) -> String {
-    let mut output: VecDeque<char> = password.chars().collect();
-
-    let mut inverses: Vec<_> = (0..output.len())
+    let mut inverses: Vec<_> = (0..password.len())
         .map(|n| {
-            let rotations = calculate_rotations(n, output.len());
-            let new_position = (n + rotations) % output.len();
+            let rotations = calculate_rotations(n, password.len());
+            let new_position = (n + rotations) % password.len();
             (new_position, rotations)
         })
         .collect();
     inverses.sort_by(|a, b| a.0.cmp(&b.0));
-    let inverses: Vec<_> = inverses
-        .into_iter()
-        .map(|(_, rotations)| rotations)
-        .collect();
+
+    let mut password = Password::from(
+        password,
+        Some(
+            inverses
+                .into_iter()
+                .map(|(_, rotations)| rotations)
+                .collect(),
+        ),
+    );
 
     for instruction in instructions.iter().rev() {
         match instruction {
-            Instruction::SwapPosition(source, dest) => output.swap(*dest, *source),
-            Instruction::SwapLetter(a, b) => {
-                let mut source = None;
-                let mut dest = None;
-                for (index, c) in output.iter().enumerate() {
-                    if *a == *c {
-                        source = Some(index);
-                    } else if *b == *c {
-                        dest = Some(index);
-                    }
-                    if source.is_some() && dest.is_some() {
-                        break;
-                    }
-                }
-                output.swap(source.unwrap(), dest.unwrap())
-            }
-            Instruction::Reverse(start, end) => {
-                for i in 0..(*end - *start) / 2 + 1 {
-                    output.swap(*start + i, *end - i);
-                }
-            }
-            Instruction::Rotate(direction, amount) => match direction {
-                Direction::Left => {
-                    for _ in 0..*amount {
-                        let temp = output.pop_back().unwrap();
-                        output.push_front(temp);
-                    }
-                }
-                Direction::Right => {
-                    for _ in 0..*amount {
-                        let temp = output.pop_front().unwrap();
-                        output.push_back(temp);
-                    }
-                }
-            },
-            Instruction::Move(source, dest) => {
-                let temp = output.remove(*dest).unwrap();
-                output.insert(*source, temp);
-            }
-            Instruction::RotateAt(c) => {
-                let index = output.iter().position(|letter| letter == c).unwrap();
-                let rotations = inverses[index];
-                for _ in 0..rotations {
-                    let temp = output.pop_front().unwrap();
-                    output.push_back(temp);
-                }
-            }
+            Instruction::SwapPosition(a, b) => password.swap_indices(*a, *b),
+            Instruction::SwapLetter(a, b) => password.swap_chars(*a, *b),
+            Instruction::Reverse(start, end) => password.reverse_range(*start, *end),
+            Instruction::Rotate(direction, amount) => password.rotate(!*direction, *amount),
+            Instruction::Move(src, dest) => password.move_char(*dest, *src),
+            Instruction::RotateAt(c) => password.rotate_char(Direction::Left, *c),
         }
     }
 
-    output.into_iter().collect()
+    password.to_string()
 }
 
 fn time_it<F, T>(fun: F) -> T
