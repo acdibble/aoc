@@ -3,42 +3,40 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-fn get_next_row(input: &str) -> String {
-    let mut chars = input.chars();
+fn get_next_row(input: &Vec<char>, buffer: &mut Vec<char>) {
+    let mut chars = input.iter();
 
-    let mut buffer = String::with_capacity(input.len());
-
-    let mut left = None;
+    let mut left = Some(&'.');
     let mut center = chars.next();
     let mut right = chars.next();
 
-    while center.is_some() {
+    let mut i = 0;
+
+    while i < input.len() {
         let result = match (left, center, right) {
             (Some('^'), Some('^'), Some('.'))
-            | (Some('^'), Some('^'), None)
             | (Some('.'), Some('^'), Some('^'))
-            | (None, Some('^'), Some('^'))
             | (Some('^'), Some('.'), Some('.'))
-            | (Some('^'), Some('.'), None)
-            | (Some('.'), Some('.'), Some('^'))
-            | (None, Some('.'), Some('^')) => '^',
+            | (Some('.'), Some('.'), Some('^')) => '^',
             _ => '.',
         };
 
-        buffer.push(result);
+        buffer[i] = result;
+        i += 1;
 
         left = center;
         center = right;
-        right = chars.next();
+        right = chars.next().or(Some(&'.'))
     }
-
-    buffer
 }
 
 #[test]
 fn test_get_next_row() {
-    assert_eq!(get_next_row("..^^."), ".^^^^");
-    assert_eq!(get_next_row(".^^^^"), "^^..^");
+    let mut buffer = Vec::new();
+    get_next_row(&"..^^.".chars().collect(), &mut buffer);
+    assert_eq!(buffer, ".^^^^");
+    get_next_row(&".^^^^".chars().collect(), &mut buffer);
+    assert_eq!(buffer, "^^..^");
 
     let ten_by_ten = [
         ".^^.^.^^^^",
@@ -54,24 +52,27 @@ fn test_get_next_row() {
     ];
 
     for i in 0..ten_by_ten.len() - 1 {
-        assert_eq!(get_next_row(ten_by_ten[i]), ten_by_ten[i + 1])
+        get_next_row(&ten_by_ten[i].chars().collect(), &mut buffer);
+        assert_eq!(buffer, ten_by_ten[i + 1])
     }
 }
 
 fn count_safe_tiles(input: &String, iterations: i32) -> i32 {
     let mut safe = 0;
 
-    let mut current = input.clone();
+    let mut current: Vec<char> = input.chars().collect();
+    let mut buffer = current.clone();
 
     for _ in 0..iterations {
-        for c in current.chars() {
+        for c in current.iter() {
             match c {
                 '.' => safe += 1,
                 _ => (),
             }
         }
 
-        current = get_next_row(&current);
+        get_next_row(&current, &mut buffer);
+        std::mem::swap(&mut current, &mut buffer);
     }
 
     safe
@@ -88,7 +89,7 @@ where
 {
     let start = SystemTime::now();
     let result = fun();
-    println!("Time elapsed: {} µs", start.elapsed().unwrap().as_micros());
+    println!("Time elapsed: {} ms", start.elapsed().unwrap().as_millis());
     result
 }
 
