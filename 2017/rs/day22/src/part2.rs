@@ -81,24 +81,18 @@ impl std::str::FromStr for Grid {
     type Err = String;
 
     fn from_str(string: &str) -> std::result::Result<Self, <Self as std::str::FromStr>::Err> {
-        let grid: Vec<Vec<State>> = string
-            .lines()
-            .map(|line| {
-                line.chars()
-                    .map(|ch| State::try_from(ch).unwrap())
-                    .collect()
-            })
-            .collect();
-
-        let mut map = HashMap::new();
-
-        for (y, row) in grid.iter().rev().enumerate() {
-            for (x, state) in row.iter().enumerate() {
-                map.insert((x as i32, y as i32), *state);
-            }
-        }
-
-        Ok(Grid(map))
+        Ok(Grid(
+            string
+                .lines()
+                .rev()
+                .enumerate()
+                .flat_map(|(y, row)| {
+                    row.chars()
+                        .enumerate()
+                        .map(move |(x, ch)| ((x as i32, y as i32), State::try_from(ch).unwrap()))
+                })
+                .collect(),
+        ))
     }
 }
 

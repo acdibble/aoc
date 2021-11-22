@@ -105,26 +105,28 @@ impl Program {
         program
     }
 
-    fn jump(&mut self, amount: i64) {
+    fn jump(&mut self, arg1: Arg, arg2: Arg) -> bool {
+        let to_compare = match arg1 {
+            Arg::Reg(ch) => *self.get_register(ch),
+            Arg::Val(v) => v,
+        };
+
+        if to_compare <= 0 {
+            return false;
+        }
+
+        let amount = match arg2 {
+            Arg::Reg(ch) => *self.get_register(ch),
+            Arg::Val(v) => v,
+        };
+
         match amount.cmp(&0) {
             Ordering::Equal => (),
             Ordering::Greater => self.pc += amount as usize,
             Ordering::Less => self.pc -= amount.wrapping_abs() as usize,
         }
-    }
 
-    fn input(&mut self, value: i64) {
-        match self.inbox.as_mut() {
-            Some(queue) => queue.push_back(value),
-            _ => unreachable!(),
-        }
-    }
-
-    fn output(&mut self) -> Option<i64> {
-        match self.outbox.as_mut() {
-            Some(queue) => queue.pop_front(),
-            _ => unreachable!(),
-        }
+        true
     }
 
     fn send(&mut self, value: i64) {
@@ -198,22 +200,8 @@ impl Program {
                         break;
                     }
                 }
-                Instruction::Jgz(Arg::Reg(register), Arg::Val(amount)) => {
-                    if *self.get_register(register) > 0 {
-                        self.jump(amount);
-                        continue;
-                    }
-                }
-                Instruction::Jgz(Arg::Reg(register), Arg::Reg(value)) => {
-                    if *self.get_register(register) > 0 {
-                        let amount = *self.get_register(value);
-                        self.jump(amount);
-                        continue;
-                    }
-                }
-                Instruction::Jgz(Arg::Val(cmp), Arg::Val(amount)) => {
-                    if cmp > 0 {
-                        self.jump(amount);
+                Instruction::Jgz(arg1, arg2) => {
+                    if self.jump(arg1, arg2) {
                         continue;
                     }
                 }
