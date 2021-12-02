@@ -4,11 +4,51 @@ use std::path::Path;
 use std::time::SystemTime;
 
 fn part_one(input: &str) -> i32 {
-    0
+    let mut horizontal = 0;
+    let mut depth = 0;
+
+    for line in input.lines() {
+        let mut parts = line.split_ascii_whitespace();
+
+        let direction = parts.next();
+
+        let amount: i32 = parts.next().unwrap().parse().unwrap();
+
+        match direction {
+            Some("forward") => horizontal += amount,
+            Some("up") => depth -= amount,
+            Some("down") => depth += amount,
+            _ => unreachable!(),
+        }
+    }
+
+    depth * horizontal
 }
 
 fn part_two(input: &str) -> i32 {
-    0
+    let mut horizontal = 0;
+    let mut depth = 0;
+    let mut aim = 0;
+
+    for line in input.lines() {
+        let mut parts = line.split_ascii_whitespace();
+
+        let direction = parts.next();
+
+        let amount: i32 = parts.next().unwrap().parse().unwrap();
+
+        match direction {
+            Some("forward") => {
+                horizontal += amount;
+                depth += aim * amount;
+            }
+            Some("up") => aim -= amount,
+            Some("down") => aim += amount,
+            _ => unreachable!(),
+        }
+    }
+
+    depth * horizontal
 }
 
 fn time_it<F, T>(fun: F) -> T
@@ -30,4 +70,3 @@ fn main() -> std::io::Result<()> {
 
     Ok(())
 }
-
