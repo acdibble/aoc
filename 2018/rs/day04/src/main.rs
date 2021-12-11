@@ -1,8 +1,9 @@
-use chrono;
 use chrono::Timelike;
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::env;
+use std::fs;
+use std::path::Path;
+use std::time::SystemTime;
 
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct SleepLog {
@@ -21,7 +22,7 @@ fn parse_date(date: &String) -> chrono::NaiveDateTime {
     chrono::NaiveDateTime::parse_from_str(date, "%Y-%m-%d %H:%M").unwrap()
 }
 
-fn parse_logs(lines: Vec<String>) -> GuardLog {
+fn parse_logs(lines: Vec<&str>) -> Vec<GuardLog> {
     let mut logs: Vec<GuardLog> = Vec::new();
     let mut date = String::new();
     let mut asleep_at: Option<chrono::NaiveDateTime> = None;
@@ -89,18 +90,16 @@ fn parse_logs(lines: Vec<String>) -> GuardLog {
     }
 
     logs.sort_by(|a, b| b.minutes_asleep.cmp(&a.minutes_asleep));
-    logs.remove(0)
+    logs
 }
 
-fn main() {
-    let mut lines = BufReader::new(File::open("day04/input.txt").unwrap())
-        .lines()
-        .map(|l| l.unwrap())
-        .collect::<Vec<String>>();
+fn part_one(input: &str) -> i32 {
+    let mut lines: Vec<_> = input.lines().collect();
 
     lines.sort();
 
-    let log = parse_logs(lines);
+    let mut logs = parse_logs(lines);
+    let log = logs.remove(0);
 
     let mut minute_map: HashMap<u32, i32> = HashMap::new();
     let mut most_frequent: u32 = 60;
@@ -116,5 +115,56 @@ fn main() {
             }
         }
     }
-    println!("result: {}", log.id * most_frequent as i32);
+
+    log.id * most_frequent as i32
+}
+
+fn part_two(input: &str) -> i32 {
+    let mut lines: Vec<_> = input.lines().collect();
+
+    lines.sort();
+
+    let logs = parse_logs(lines);
+
+    let mut output_id: i32 = 0;
+    let mut most_frequent: u32 = 60;
+    let mut count = 0;
+
+    for log in logs {
+        let mut minute_map: HashMap<u32, i32> = HashMap::new();
+
+        for sleep_log in log.sleep_logs {
+            for minute in sleep_log.asleep_at.minute()..sleep_log.awake_at.minute() {
+                let counter = minute_map.entry(minute).or_insert(0);
+                *counter += 1;
+                if count < *counter {
+                    output_id = log.id;
+                    most_frequent = minute;
+                    count = *counter;
+                }
+            }
+        }
+    }
+
+    output_id * most_frequent as i32
+}
+
+fn time_it<F, T>(fun: F) -> T
+where
+    F: Fn() -> T,
+{
+    let start = SystemTime::now();
+    let result = fun();
+    println!("Time elapsed: {} µs", start.elapsed().unwrap().as_micros());
+    result
+}
+
+fn main() -> std::io::Result<()> {
+    let file_path = env::current_dir()?.join(Path::new("data.txt"));
+    let input = fs::read_to_string(file_path)?;
+
+    time_it(|| println!("part 1: {}", part_one(&input)));
+    time_it(|| println!("part 2: {}", part_two(&input)));
+
+    Ok(())
 }
