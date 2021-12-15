@@ -77,7 +77,8 @@ impl Worker {
             option = self.task;
             self.task = None;
         }
-        return option;
+
+        option
     }
 
     fn needs_task(&self) -> bool {

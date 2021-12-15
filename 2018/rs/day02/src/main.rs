@@ -20,7 +20,7 @@ fn count_occurrences(map: &mut HashMap<char, i32>, id: &str) -> (i32, i32) {
         }
     }
 
-    return result;
+    result
 }
 
 fn part_one(input: &str) -> i32 {
@@ -55,7 +55,7 @@ fn only_one_difference(a: &str, b: &str) -> bool {
         }
     }
 
-    return true;
+    true
 }
 
 fn part_two(input: &str) -> String {
