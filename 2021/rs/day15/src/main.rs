@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::BinaryHeap;
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -18,14 +18,40 @@ fn dec(n: usize) -> Option<usize> {
     }
 }
 
+struct State(u32, (usize, usize));
+
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for State {}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> std::option::Option<std::cmp::Ordering> {
+        Some(other.0.cmp(&self.0))
+    }
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.0.cmp(&self.0)
+    }
+}
+
 fn find_lowest_risk(grid: &Vec<Vec<u32>>) -> u32 {
     let grid_size = grid.len();
 
     let mut costs_matrix = vec![vec![0; grid_size]; grid_size];
 
-    let mut queue = VecDeque::from([(0, (0, 0))]);
+    let mut heap = BinaryHeap::from([State(0, (0, 0))]);
 
-    while let Some((amount, (x, y))) = queue.pop_front() {
+    let target = (grid_size - 1, grid_size - 1);
+
+    while let Some(State(amount, coords)) = heap.pop() {
+        let (x, y) = coords;
+
         let cost = &mut costs_matrix[y][x];
 
         if *cost != 0 && *cost <= amount {
@@ -34,24 +60,28 @@ fn find_lowest_risk(grid: &Vec<Vec<u32>>) -> u32 {
 
         *cost = amount;
 
+        if coords == target {
+            break;
+        }
+
         if let Some(x) = inc(x, grid_size) {
-            queue.push_back((amount + grid[y][x], (x, y)))
+            heap.push(State(amount + grid[y][x], (x, y)))
         }
 
         if let Some(y) = inc(y, grid_size) {
-            queue.push_back((amount + grid[y][x], (x, y)))
+            heap.push(State(amount + grid[y][x], (x, y)))
         }
 
         if let Some(x) = dec(x) {
-            queue.push_back((amount + grid[y][x], (x, y)))
+            heap.push(State(amount + grid[y][x], (x, y)))
         }
 
         if let Some(y) = dec(y) {
-            queue.push_back((amount + grid[y][x], (x, y)))
+            heap.push(State(amount + grid[y][x], (x, y)))
         }
     }
 
-    costs_matrix[grid_size - 1][grid_size - 1]
+    costs_matrix[target.1][target.0]
 }
 
 fn part_one(input: &str) -> u32 {
@@ -112,7 +142,7 @@ where
 {
     let start = SystemTime::now();
     let result = fun();
-    println!("Time elapsed: {} ms", start.elapsed().unwrap().as_millis());
+    println!("Time elapsed: {} µs", start.elapsed().unwrap().as_micros());
     result
 }
 
