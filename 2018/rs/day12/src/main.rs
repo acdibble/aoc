@@ -1,10 +1,139 @@
+use std::collections::VecDeque;
 use std::env;
 use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-fn part_one(input: &str) -> i32 {
-    0
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+enum State {
+    Dead,
+    Live,
+}
+
+#[derive(Debug)]
+struct Plant {
+    location: i32,
+    state: State,
+}
+
+impl Plant {
+    fn new(location: i32, state: State) -> Self {
+        Self { location, state }
+    }
+}
+
+impl std::convert::TryFrom<char> for State {
+    type Error = char;
+
+    fn try_from(
+        ch: char,
+    ) -> std::result::Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
+        match ch {
+            '.' => Ok(Self::Dead),
+            '#' => Ok(Self::Live),
+            _ => Err(ch),
+        }
+    }
+}
+
+fn parse_combinations(lines: std::str::Lines) -> Vec<([State; 5], State)> {
+    lines
+        .map(|line| {
+            let mut parts = line.split(" => ");
+            let mut states = parts.next().unwrap().chars();
+
+            (
+                [
+                    State::try_from(states.next().unwrap()).unwrap(),
+                    State::try_from(states.next().unwrap()).unwrap(),
+                    State::try_from(states.next().unwrap()).unwrap(),
+                    State::try_from(states.next().unwrap()).unwrap(),
+                    State::try_from(states.next().unwrap()).unwrap(),
+                ],
+                State::try_from(parts.next().unwrap().chars().next().unwrap()).unwrap(),
+            )
+        })
+        .collect()
+}
+
+fn iterate(input: &str, times: usize) -> i32 {
+    let mut lines = input.lines();
+    let mut plants: VecDeque<_> = lines
+        .next()
+        .unwrap()
+        .split(' ')
+        .nth(2)
+        .unwrap()
+        .chars()
+        .flat_map(State::try_from)
+        .enumerate()
+        .map(|(loc, state)| Plant {
+            state,
+            location: loc as i32,
+        })
+        .collect();
+
+    lines.next();
+
+    let combinations = parse_combinations(lines);
+    let mut buffer = VecDeque::with_capacity(combinations.len());
+
+    for step in 0..times {
+        let first = plants.front().unwrap().location;
+
+        let mut current = [
+            Plant::new(first - 4, State::Dead),
+            Plant::new(first - 3, State::Dead),
+            Plant::new(first - 2, State::Dead),
+            Plant::new(first - 1, State::Dead),
+            plants.pop_front().unwrap(),
+        ];
+
+        let last = plants.back().unwrap().location;
+
+        plants.push_back(Plant::new(last + 1, State::Dead));
+        plants.push_back(Plant::new(last + 2, State::Dead));
+        plants.push_back(Plant::new(last + 3, State::Dead));
+
+        while let Some(plant) = plants.pop_front() {
+            current.rotate_left(1);
+            current[4] = plant;
+            let states = [
+                current[0].state,
+                current[1].state,
+                current[2].state,
+                current[3].state,
+                current[4].state,
+            ];
+
+            for combo in &combinations {
+                if combo.0 == states {
+                    buffer.push_back(Plant::new(current[2].location, combo.1));
+                    break;
+                }
+            }
+        }
+
+        std::mem::swap(&mut plants, &mut buffer);
+
+        if times > 20 {
+            let amount = plants.iter().fold(0, |acc, plant| {
+                acc + match plant.state {
+                    State::Live => plant.location,
+                    _ => 0,
+                }
+            });
+
+            println!("{} => {}", step, amount);
+        }
+    }
+
+    plants.into_iter().fold(0, |acc, plant| {
+        acc + match plant.state {
+            State::Live => plant.location,
+            _ => 0,
+        }
+    })
 }
 
 fn part_two(input: &str) -> i32 {
@@ -25,9 +154,8 @@ fn main() -> std::io::Result<()> {
     let file_path = env::current_dir()?.join(Path::new("data.txt"));
     let input = fs::read_to_string(file_path)?;
 
-    time_it(|| println!("part 1: {}", part_one(&input)));
-    time_it(|| println!("part 2: {}", part_two(&input)));
+    time_it(|| println!("part 1: {}", iterate(&input, 20)));
+    time_it(|| println!("part 2: {}", iterate(&input, 500)));
 
     Ok(())
 }
-
