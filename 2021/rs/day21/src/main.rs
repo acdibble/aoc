@@ -56,21 +56,11 @@ fn part_one(input: &str) -> i32 {
     let mut player_two = Player::new(b);
     let mut rolls = 0;
 
-    let mut current = 0;
-
     while player_one.score < 1000 && player_two.score < 1000 {
         rolls += 3;
-
         let total = (0..3).flat_map(|_| die.next()).sum();
-
-        let player = match current {
-            0 => &mut player_one,
-            _ => &mut player_two,
-        };
-
-        player.advance(total);
-
-        current ^= 1;
+        player_one.advance(total);
+        std::mem::swap(&mut player_one, &mut player_two);
     }
 
     rolls * player_one.score.min(player_two.score)
@@ -98,13 +88,14 @@ impl Scores {
     fn max(&self) -> i128 {
         self.0.max(self.1)
     }
+
+    fn reverse(&self) -> Self {
+        Scores(self.1, self.0)
+    }
 }
 
-fn play(
-    players: (Player, Player, i32),
-    cache: &mut HashMap<(Player, Player, i32), Scores>,
-) -> Scores {
-    let (a, b, current) = players;
+fn play(players: (Player, Player), cache: &mut HashMap<(Player, Player), Scores>) -> Scores {
+    let (a, b) = players;
 
     if a.score >= 21 {
         return Scores(1, 0);
@@ -114,24 +105,17 @@ fn play(
         return Scores(0, 1);
     }
 
-    match cache.get(&players) {
-        Some(&value) => return value,
-        _ => (),
+    if let Some(&value) = cache.get(&players) {
+        return value;
     }
 
     let mut running_total = Scores(0, 0);
-    let next = current ^ 1;
-
     for i in 1..=3 {
         for j in 1..=3 {
             for k in 1..=3 {
-                let mut a = players.0;
-                let mut b = players.1;
-                match current {
-                    0 => a.advance(i + j + k),
-                    _ => b.advance(i + j + k),
-                }
-                running_total += play((a, b, next), cache);
+                let (mut a, _) = players;
+                a.advance(i + j + k);
+                running_total += play((b, a), cache).reverse();
             }
         }
     }
@@ -149,7 +133,7 @@ fn part_two(input: &str) -> i128 {
 
     let mut cache = HashMap::new();
 
-    play((player_one, player_two, 0), &mut cache).max()
+    play((player_one, player_two), &mut cache).max()
 }
 
 fn time_it<F, T>(fun: F) -> T
