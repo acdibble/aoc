@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{BinaryHeap, HashMap};
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -13,15 +13,6 @@ enum Amphipod {
 }
 
 impl Amphipod {
-    fn char(&self) -> char {
-        match self {
-            Self::Amber => 'A',
-            Self::Bronze => 'B',
-            Self::Copper => 'C',
-            Self::Desert => 'D',
-        }
-    }
-
     fn from_char(ch: char) -> Option<Self> {
         match ch {
             'A' => Some(Self::Amber),
@@ -237,56 +228,6 @@ impl<const N: usize> Burrow<N> {
         true
     }
 
-    fn print(&self) {
-        println!("#############");
-
-        print!("#");
-        for loc in &self.0 {
-            print!(
-                "{}",
-                match loc {
-                    Location::Hall(None) | Location::Room(_) => '.',
-                    Location::Hall(Some(amphipod)) => amphipod.char(),
-                }
-            )
-        }
-        println!("#");
-
-        print!("###");
-
-        for loc in &self.0 {
-            match loc {
-                Location::Hall(_) => {}
-                Location::Room(room) => {
-                    match room.spaces[N - 1] {
-                        Some(amphipod) => print!("{}", amphipod.char()),
-                        _ => print!("."),
-                    }
-                    print!("#")
-                }
-            }
-        }
-        println!("##");
-
-        for i in (0..(N - 2)).rev() {
-            print!("  #");
-            for loc in &self.0 {
-                match loc {
-                    Location::Hall(_) => {}
-                    Location::Room(room) => {
-                        match room.spaces[i] {
-                            Some(amphipod) => print!("{}", amphipod.char()),
-                            _ => print!("."),
-                        }
-                        print!("#")
-                    }
-                }
-            }
-        }
-        println!();
-        println!("  #########");
-    }
-
     fn create_clone(
         &self,
         index1: usize,
@@ -303,51 +244,101 @@ impl<const N: usize> Burrow<N> {
     }
 }
 
-fn solve<const N: usize>(input: &str) -> i32 {
-    let solved;
-    if N == 2 {
-        solved = Burrow::from_str(
-            "#############
+struct HeapElement<const N: usize>(Burrow<N>, i32);
+
+impl<const N: usize> PartialEq for HeapElement<N> {
+    fn eq(&self, other: &Self) -> bool {
+        self.1 == other.1
+    }
+}
+
+impl<const N: usize> PartialOrd for HeapElement<N> {
+    fn partial_cmp(&self, other: &Self) -> std::option::Option<std::cmp::Ordering> {
+        Some(other.1.cmp(&self.1))
+    }
+}
+
+impl<const N: usize> Eq for HeapElement<N> {}
+
+impl<const N: usize> Ord for HeapElement<N> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.1.cmp(&self.1)
+    }
+}
+
+struct CacheHeap<const N: usize> {
+    heap: BinaryHeap<HeapElement<N>>,
+    cache: HashMap<Burrow<N>, i32>,
+    min_energy: i32,
+    solved: Burrow<N>,
+}
+
+impl<const N: usize> CacheHeap<N> {
+    fn new(burrow: Burrow<N>) -> Self {
+        let solved;
+        if N == 2 {
+            solved = Burrow::from_str(
+                "#############
 #...........#
 ###A#B#C#D###
   #A#B#C#D#
   #########",
-        );
-    } else {
-        solved = Burrow::from_str(
-            "#############
+            );
+        } else {
+            solved = Burrow::from_str(
+                "#############
 #...........#
 ###A#B#C#D###
   #A#B#C#D#
   #A#B#C#D#
   #A#B#C#D#
   #########",
-        );
+            );
+        }
+
+        let mut heap = BinaryHeap::new();
+        heap.push(HeapElement(burrow, 0));
+
+        CacheHeap {
+            solved,
+            heap,
+            cache: HashMap::new(),
+            min_energy: i32::MAX,
+        }
     }
 
+    fn pop(&mut self) -> Option<HeapElement<N>> {
+        self.heap.pop()
+    }
+
+    fn push(&mut self, value: HeapElement<N>) {
+        if value.1 >= self.min_energy {
+            return;
+        }
+
+        let entry = self.cache.entry(value.0).or_insert(i32::MAX);
+
+        if *entry <= value.1 {
+            return;
+        }
+
+        *entry = value.1;
+
+        if value.0 == self.solved {
+            self.min_energy = value.1.min(self.min_energy);
+            return;
+        }
+
+        self.heap.push(value)
+    }
+}
+
+fn solve<const N: usize>(input: &str) -> i32 {
     let burrow = Burrow::<N>::from_str(input);
 
-    let mut cache = HashMap::new();
-    let mut queue = VecDeque::from([(burrow, 0)]);
-    let mut min_energy = i32::MAX;
+    let mut heap = CacheHeap::new(burrow);
 
-    while let Some((burrow, energy)) = queue.pop_front() {
-        if energy >= min_energy {
-            continue;
-        }
-
-        let entry = cache.entry(burrow).or_insert(i32::MAX);
-
-        if *entry <= energy {
-            continue;
-        }
-
-        *entry = energy;
-
-        if burrow == solved {
-            min_energy = min_energy.min(energy)
-        }
-
+    while let Some(HeapElement(burrow, energy)) = heap.pop() {
         for (starting_index, location) in burrow.0.iter().enumerate() {
             match location {
                 &Location::Room(mut room) => {
@@ -367,7 +358,7 @@ fn solve<const N: usize>(input: &str) -> i32 {
                                             starting_index,
                                             Location::Room(room),
                                         );
-                                        queue.push_back((
+                                        heap.push(HeapElement(
                                             new_burrow,
                                             energy
                                                 + ejected.energy_used(
@@ -385,7 +376,7 @@ fn solve<const N: usize>(input: &str) -> i32 {
                                         starting_index,
                                         Location::Room(room),
                                     );
-                                    queue.push_back((
+                                    heap.push(HeapElement(
                                         new_burrow,
                                         energy
                                             + ejected.energy_used(
@@ -410,7 +401,7 @@ fn solve<const N: usize>(input: &str) -> i32 {
                                     starting_index,
                                     Location::Hall(None),
                                 );
-                                queue.push_back((
+                                heap.push(HeapElement(
                                     new_burrow,
                                     energy
                                         + amphipod.energy_used(
@@ -429,13 +420,7 @@ fn solve<const N: usize>(input: &str) -> i32 {
         }
     }
 
-    for (b, energy) in queue {
-        println!("energy: {}", energy);
-        b.print();
-        println!();
-    }
-
-    min_energy
+    heap.min_energy
 }
 
 fn part_two(input: &str) -> i32 {
