@@ -56,7 +56,16 @@ fn parse_combinations(lines: std::str::Lines) -> Vec<([State; 5], State)> {
         .collect()
 }
 
-fn iterate(input: &str, times: usize) -> i32 {
+fn count_plants(plants: &VecDeque<Plant>) -> usize {
+    plants.into_iter().fold(0, |acc, plant| {
+        acc + match plant.state {
+            State::Live => plant.location,
+            _ => 0,
+        }
+    }) as usize
+}
+
+fn iterate(input: &str, times: usize) -> usize {
     let mut lines = input.lines();
     let mut plants: VecDeque<_> = lines
         .next()
@@ -77,6 +86,8 @@ fn iterate(input: &str, times: usize) -> i32 {
 
     let combinations = parse_combinations(lines);
     let mut buffer = VecDeque::with_capacity(combinations.len());
+    let mut previous_amount = count_plants(&plants);
+    let mut previous_diff = 0;
 
     for step in 0..times {
         let first = plants.front().unwrap().location;
@@ -117,27 +128,20 @@ fn iterate(input: &str, times: usize) -> i32 {
         std::mem::swap(&mut plants, &mut buffer);
 
         if times > 20 {
-            let amount = plants.iter().fold(0, |acc, plant| {
-                acc + match plant.state {
-                    State::Live => plant.location,
-                    _ => 0,
-                }
-            });
+            let amount = count_plants(&plants);
+            let diff = amount as i32 - previous_amount as i32;
 
-            println!("{} => {}", step, amount);
+            if diff == previous_diff {
+                let remaining_generations = 50000000000usize - step - 1;
+                return amount + remaining_generations * diff as usize;
+            }
+
+            previous_diff = diff;
+            previous_amount = amount;
         }
     }
 
-    plants.into_iter().fold(0, |acc, plant| {
-        acc + match plant.state {
-            State::Live => plant.location,
-            _ => 0,
-        }
-    })
-}
-
-fn part_two(input: &str) -> i32 {
-    0
+    count_plants(&plants)
 }
 
 fn time_it<F, T>(fun: F) -> T
