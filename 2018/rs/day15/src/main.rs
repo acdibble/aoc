@@ -106,17 +106,17 @@ enum Tile {
 
 impl Default for Tile {
     fn default() -> Self {
-        Tile::Empty
+        Self::Empty
     }
 }
 
 impl Tile {
     fn is_creature(&self) -> bool {
-        matches!(self, Tile::Goblin(_) | Tile::Elf(_))
+        matches!(self, Self::Goblin(_) | Self::Elf(_))
     }
 
     fn is_empty(&self) -> bool {
-        matches!(self, Tile::Empty)
+        matches!(self, Self::Empty)
     }
 
     fn from_char(ch: char) -> Self {

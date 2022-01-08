@@ -59,7 +59,7 @@ const RINGS: [Item; 6] = [
     Item("Defense +3", 80, 0, 3),
 ];
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 struct Loadout {
     weapon: Item,
     armor: Option<Item>,
@@ -90,20 +90,20 @@ impl Loadout {
 
 fn generate_ring_combos(loadouts: &mut Vec<Loadout>, weapon: Item, armor: Option<Item>) {
     for ring1 in RINGS {
-        loadouts.push(Loadout {
+        let base = Loadout {
             weapon,
             armor,
             ring1: Some(ring1),
             ring2: None,
-        });
+        };
+        loadouts.push(base);
 
         for ring2 in RINGS {
             if ring1 != ring2 {
                 loadouts.push(Loadout {
-                    weapon,
-                    armor,
                     ring1: Some(ring1),
                     ring2: Some(ring2),
+                    ..base
                 });
             }
         }
@@ -114,19 +114,18 @@ fn generate_loadouts() -> Vec<Loadout> {
     let mut loadouts = Vec::new();
 
     for weapon in WEAPONS {
-        loadouts.push(Loadout {
+        let base = Loadout {
             weapon,
             armor: None,
             ring1: None,
             ring2: None,
-        });
+        };
+        loadouts.push(base);
 
         for armor in ARMORS {
             loadouts.push(Loadout {
-                weapon,
                 armor: Some(armor),
-                ring1: None,
-                ring2: None,
+                ..base
             });
 
             generate_ring_combos(&mut loadouts, weapon, Some(armor));
@@ -172,7 +171,7 @@ fn part_one(loadouts: &Vec<Loadout>, boss: Person) -> i32 {
         }
 
         if me.is_alive() {
-            price = std::cmp::min(price, loadout.cost());
+            price = price.min(loadout.cost());
         }
     }
 
@@ -192,7 +191,7 @@ fn part_two(loadouts: &Vec<Loadout>, boss: Person) -> i32 {
         }
 
         if boss.is_alive() {
-            price = std::cmp::max(price, loadout.cost());
+            price = price.max(loadout.cost());
         }
     }
 

@@ -20,7 +20,7 @@ enum Argument {
 impl std::str::FromStr for Argument {
     type Err = ();
 
-    fn from_str(string: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "a" => Ok(Self::Register(Register::A)),
             "b" => Ok(Self::Register(Register::B)),
@@ -46,7 +46,7 @@ enum Instruction {
 impl std::str::FromStr for Instruction {
     type Err = ();
 
-    fn from_str(line: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
         let mut parts = line.split_ascii_whitespace();
 
         let inst = match parts.next().unwrap() {
@@ -84,7 +84,7 @@ struct Computer {
 }
 
 impl Computer {
-    fn new(input: &String) -> Computer {
+    fn new(input: &String) -> Self {
         let instructions = parse_instructions(input);
         Self {
             a: 0,

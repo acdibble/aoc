@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use std::env;
 use std::fs;
 use std::path::Path;
-use std::result::Result;
 use std::time::SystemTime;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -36,8 +35,8 @@ struct Effect(Spell, u32);
 impl Effect {
     fn new(spell: Spell) -> Option<Self> {
         match spell {
-            Spell::Shield | Spell::Poison => Some(Effect(spell, 6)),
-            Spell::Recharge => Some(Effect(spell, 5)),
+            Spell::Shield | Spell::Poison => Some(Self(spell, 6)),
+            Spell::Recharge => Some(Self(spell, 5)),
             _ => None,
         }
     }
@@ -140,7 +139,7 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
         }
 
         if !boss.is_alive() {
-            minimum_mana = std::cmp::min(minimum_mana, mana_expended);
+            minimum_mana = minimum_mana.min(mana_expended);
             continue;
         }
 
@@ -166,7 +165,7 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
         }
 
         if !boss.is_alive() {
-            minimum_mana = std::cmp::min(minimum_mana, mana_expended);
+            minimum_mana = minimum_mana.min(mana_expended);
             continue;
         }
 
@@ -175,7 +174,7 @@ fn do_battle(boss: Person, hard_mode: bool) -> u32 {
         }
 
         if !boss.is_alive() {
-            minimum_mana = std::cmp::min(minimum_mana, mana_expended);
+            minimum_mana = minimum_mana.min(mana_expended);
             continue;
         }
 

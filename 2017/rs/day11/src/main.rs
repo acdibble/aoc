@@ -15,7 +15,7 @@ enum Direction {
 impl std::str::FromStr for Direction {
     type Err = ();
 
-    fn from_str(string: &str) -> std::result::Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
         let direction = match string {
             "n" => Direction::North,
             "ne" => Direction::NorthEast,

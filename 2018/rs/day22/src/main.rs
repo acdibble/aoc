@@ -101,17 +101,19 @@ impl Spelunker {
     }
 
     fn move_to(&self, location: (usize, usize)) -> Self {
-        let mut new = *self;
-        new.minutes_spent += 1;
-        new.location = location;
-        new
+        Self {
+            minutes_spent: self.minutes_spent + 1,
+            location,
+            ..*self
+        }
     }
 
     fn switch_to(&self, tool: Tool) -> Self {
-        let mut new = *self;
-        new.tool = tool;
-        new.minutes_spent += 7;
-        new
+        Self {
+            tool,
+            minutes_spent: self.minutes_spent + 7,
+            ..*self
+        }
     }
 
     fn distance_to_goal(&self) -> usize {

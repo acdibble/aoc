@@ -12,8 +12,8 @@ impl std::fmt::Debug for Password {
 }
 
 impl Password {
-    fn from(string: String) -> Password {
-        Password(string.as_bytes().to_owned())
+    fn from(string: String) -> Self {
+        Self(string.as_bytes().to_owned())
     }
 
     fn increment(&mut self) {

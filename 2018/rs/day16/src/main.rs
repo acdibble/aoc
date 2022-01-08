@@ -28,9 +28,7 @@ enum Opcode {
 impl convert::TryFrom<usize> for Opcode {
     type Error = ();
 
-    fn try_from(
-        number: usize,
-    ) -> std::result::Result<Self, <Self as convert::TryFrom<usize>>::Error> {
+    fn try_from(number: usize) -> Result<Self, <Self as convert::TryFrom<usize>>::Error> {
         match number {
             0 => Ok(Self::Addr),
             1 => Ok(Self::Addi),
@@ -62,8 +60,8 @@ impl Opcode {
 struct Instruction(usize, usize, usize, usize);
 
 impl Instruction {
-    fn new(array: &[usize; 4]) -> Self {
-        Instruction(array[0], array[1], array[2], array[3])
+    fn new(&[op, a, b, c]: &[usize; 4]) -> Self {
+        Self(op, a, b, c)
     }
 }
 

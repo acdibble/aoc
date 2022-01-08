@@ -29,7 +29,7 @@ impl PartialEq for State {
 impl Eq for State {}
 
 impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> std::option::Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(other.0.cmp(&self.0))
     }
 }

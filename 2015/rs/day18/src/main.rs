@@ -22,7 +22,7 @@ enum Cell {
 
 impl Default for Cell {
     fn default() -> Self {
-        Cell::Dark
+        Self::Dark
     }
 }
 
@@ -84,7 +84,7 @@ impl Grid {
             }
         }
 
-        Grid(storage)
+        Self(storage)
     }
 
     fn from(string: &String) -> Self {
@@ -100,7 +100,7 @@ impl Grid {
             }
         }
 
-        Grid(storage)
+        Self(storage)
     }
 
     fn light_corners(&mut self) {

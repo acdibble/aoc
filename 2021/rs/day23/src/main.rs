@@ -193,7 +193,7 @@ impl<const N: usize> Burrow<N> {
             }
         }
 
-        Burrow([
+        Self([
             location_0,
             location_1,
             Location::Room(room_a),
@@ -253,7 +253,7 @@ impl<const N: usize> PartialEq for HeapElement<N> {
 }
 
 impl<const N: usize> PartialOrd for HeapElement<N> {
-    fn partial_cmp(&self, other: &Self) -> std::option::Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(other.1.cmp(&self.1))
     }
 }
@@ -299,7 +299,7 @@ impl<const N: usize> CacheHeap<N> {
         let mut heap = BinaryHeap::new();
         heap.push(HeapElement(burrow, 0));
 
-        CacheHeap {
+        Self {
             solved,
             heap,
             cache: HashMap::new(),

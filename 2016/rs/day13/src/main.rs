@@ -32,7 +32,7 @@ fn part_one(input: u32) -> i32 {
         seen.insert((x, y));
 
         if x == target_x && y == target_y {
-            min_steps = std::cmp::min(min_steps, steps)
+            min_steps = min_steps.min(steps)
         }
 
         let left = (x.saturating_sub(1), y);

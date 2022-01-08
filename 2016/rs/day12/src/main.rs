@@ -14,7 +14,7 @@ enum Register {
 impl std::str::FromStr for Register {
     type Err = ();
 
-    fn from_str(string: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "a" => Ok(Self::A),
             "b" => Ok(Self::B),
@@ -89,7 +89,7 @@ impl Computer {
     fn new(input: &String) -> Self {
         let instructions = parse_instructions(input);
 
-        Computer {
+        Self {
             a: 0,
             b: 0,
             c: 0,

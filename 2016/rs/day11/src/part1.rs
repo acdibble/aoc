@@ -115,7 +115,7 @@ struct HashQueue<'a> {
 
 impl<'a> HashQueue<'a> {
     fn new(init: ([Floor<'a>; 4], usize, i32)) -> Self {
-        HashQueue {
+        Self {
             hash_map: HashMap::from([((init.0, init.1), init.2)]),
             queue: VecDeque::from([init]),
         }
@@ -187,7 +187,7 @@ fn find_solution(input: &String) -> i32 {
         }
 
         if floors[3].0.iter().rev().all(|item| !item.is_none()) {
-            min_steps = std::cmp::min(min_steps, steps)
+            min_steps = min_steps.min(steps)
         }
 
         let new_steps = steps + 1;

@@ -13,8 +13,8 @@ struct RoomName<'a> {
     checksum: &'a str,
 }
 
-impl RoomName<'_> {
-    fn from(line: &str) -> RoomName {
+impl<'a> RoomName<'a> {
+    fn from(line: &'a str) -> Self {
         let mut frequencies = HashMap::new();
         let mut sector_id = String::new();
         let mut it = line.chars().enumerate();
@@ -29,7 +29,7 @@ impl RoomName<'_> {
 
         let (checksum_start, _) = it.next().unwrap();
 
-        RoomName {
+        Self {
             raw: line,
             char_counts: frequencies,
             sector_id: sector_id.parse().unwrap(),

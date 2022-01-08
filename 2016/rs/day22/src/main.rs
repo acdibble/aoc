@@ -23,7 +23,7 @@ impl PartialEq for Node {
 
 impl Node {
     fn new(x: usize, y: usize, used: usize, avail: usize) -> Self {
-        Node {
+        Self {
             x,
             y,
             used,

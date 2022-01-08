@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::Path;
-use std::result::Result;
 use std::str::FromStr;
 use std::time::SystemTime;
 
@@ -40,7 +39,7 @@ struct LineIter {
 impl Iterator for LineIter {
     type Item = (i32, i32);
 
-    fn next(&mut self) -> std::option::Option<<Self as Iterator>::Item> {
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
         if self.done {
             return None;
         }

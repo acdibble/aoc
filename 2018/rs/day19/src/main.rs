@@ -23,7 +23,7 @@ enum Opcode {
 impl std::str::FromStr for Opcode {
     type Err = ();
 
-    fn from_str(string: &str) -> std::result::Result<Opcode, ()> {
+    fn from_str(string: &str) -> Result<Opcode, ()> {
         match string {
             "addr" => Ok(Self::Addr),
             "addi" => Ok(Self::Addi),
@@ -51,7 +51,7 @@ struct Instruction(Opcode, usize, usize, usize);
 impl std::str::FromStr for Instruction {
     type Err = ();
 
-    fn from_str(line: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
         let mut parts = line.split_ascii_whitespace();
         Ok(Self(
             parts.next().unwrap().parse().unwrap(),

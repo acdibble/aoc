@@ -25,7 +25,7 @@ struct Bot {
 
 impl Bot {
     fn new(instruction: Instruction) -> Self {
-        Bot {
+        Self {
             instruction,
             high: None,
             low: None,

@@ -9,8 +9,8 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(capacity: usize, serial_number: i32) -> Grid {
-        Grid {
+    fn new(capacity: usize, serial_number: i32) -> Self {
+        Self {
             serial_number,
             storage: vec![Vec::with_capacity(capacity); capacity],
         }

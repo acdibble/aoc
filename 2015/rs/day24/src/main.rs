@@ -13,8 +13,8 @@ struct GroupGenerator {
 }
 
 impl GroupGenerator {
-    fn new(packages: Vec<i32>, target: i32) -> GroupGenerator {
-        GroupGenerator {
+    fn new(packages: Vec<i32>, target: i32) -> Self {
+        Self {
             index: 0,
             running_total: 0,
             stack: Vec::new(),

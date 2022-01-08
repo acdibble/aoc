@@ -24,32 +24,32 @@ struct Comparison<'a> {
 impl<'a> Comparison<'a> {
     fn from(comparison: &'a str, register: &'a str, value: i32) -> Self {
         match comparison {
-            "<=" => Comparison {
+            "<=" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Lte,
             },
-            "<" => Comparison {
+            "<" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Lt,
             },
-            "!=" => Comparison {
+            "!=" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Ne,
             },
-            ">" => Comparison {
+            ">" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Gt,
             },
-            ">=" => Comparison {
+            ">=" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Gte,
             },
-            "==" => Comparison {
+            "==" => Self {
                 register,
                 value,
                 kind: ComparisonKind::Eq,

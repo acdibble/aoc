@@ -20,7 +20,7 @@ enum Argument {
 impl std::str::FromStr for Argument {
     type Err = ();
 
-    fn from_str(string: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
             "a" => Ok(Self::Register(Register::A)),
             "b" => Ok(Self::Register(Register::B)),
@@ -46,7 +46,7 @@ enum Instruction {
 impl std::str::FromStr for Instruction {
     type Err = ();
 
-    fn from_str(line: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
         let mut parts = line.split_ascii_whitespace();
 
         let inst = match parts.next().unwrap() {
@@ -71,10 +71,10 @@ impl std::str::FromStr for Instruction {
 impl Instruction {
     fn toggle(&self) -> Self {
         match self {
-            Instruction::Increment(arg) => Instruction::Decrement(*arg),
-            Instruction::Decrement(arg) | Instruction::Toggle(arg) => Instruction::Increment(*arg),
-            Instruction::JumpIfNotZero(arg1, arg2) => Instruction::Copy(*arg1, *arg2),
-            Instruction::Copy(arg1, arg2) => Instruction::JumpIfNotZero(*arg1, *arg2),
+            Self::Increment(arg) => Self::Decrement(*arg),
+            Self::Decrement(arg) | Self::Toggle(arg) => Self::Increment(*arg),
+            Self::JumpIfNotZero(arg1, arg2) => Self::Copy(*arg1, *arg2),
+            Self::Copy(arg1, arg2) => Self::JumpIfNotZero(*arg1, *arg2),
         }
     }
 }
@@ -97,7 +97,7 @@ impl Computer {
     fn new(input: &String) -> Self {
         let instructions = parse_instructions(input);
 
-        Computer {
+        Self {
             a: 0,
             b: 0,
             c: 0,

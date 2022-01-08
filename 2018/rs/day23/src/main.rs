@@ -212,8 +212,7 @@ fn main() -> std::io::Result<()> {
     let input = fs::read_to_string(file_path)?;
 
     time_it(|| println!("part 1: {}", part_one(&input)));
-    // time_it(|| println!("part 2: {}", part_two(&input)));
-    time_it(|| println!("part 2: {}", part_two_z3(&input)));
+    time_it(|| println!("part 2: {}", part_two(&input)));
 
     Ok(())
 }

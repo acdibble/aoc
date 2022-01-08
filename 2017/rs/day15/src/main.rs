@@ -28,7 +28,7 @@ impl Generator {
 impl Iterator for Generator {
     type Item = u16;
 
-    fn next(&mut self) -> std::option::Option<<Self as std::iter::Iterator>::Item> {
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
         loop {
             self.current = (self.current * self.factor) % 2147483647;
             if self.multiple == 1 || self.current % self.multiple == 0 {

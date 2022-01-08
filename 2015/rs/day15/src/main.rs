@@ -19,7 +19,7 @@ fn parse_with_comma(string: Option<&str>) -> i32 {
 }
 
 impl Ingredient {
-    fn from(string: &str) -> Ingredient {
+    fn from(string: &str) -> Self {
         let mut it = string.split_ascii_whitespace();
 
         it.next().unwrap();
@@ -40,7 +40,7 @@ impl Ingredient {
         it.next();
         let calories = it.next().unwrap().parse().unwrap();
 
-        Ingredient {
+        Self {
             capacity,
             durability,
             flavor,
@@ -56,8 +56,8 @@ struct PermutationGenerator {
 }
 
 impl PermutationGenerator {
-    fn new(total: i32, size: usize) -> PermutationGenerator {
-        PermutationGenerator {
+    fn new(total: i32, size: usize) -> Self {
+        Self {
             total,
             amounts: vec![0; size],
         }

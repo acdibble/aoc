@@ -3,49 +3,44 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-#[derive(Debug, Default)]
-pub struct Coordinate {
+#[derive(Debug)]
+struct Coordinate {
     x: i32,
     y: i32,
-    pub count: i32,
+    count: i32,
 }
 
 impl Coordinate {
-    pub fn from_string(string: &str) -> Coordinate {
-        let mut coord: Coordinate = Default::default();
-        let mut x_set = false;
-        for part in string.split(", ") {
-            if x_set {
-                coord.y = part.parse().unwrap();
-            } else {
-                coord.x = part.parse().unwrap();
-            }
-            x_set = true;
+    fn from_string(string: &str) -> Self {
+        let mut parts = string.split(", ");
+        Self {
+            x: parts.next().unwrap().parse().unwrap(),
+            y: parts.next().unwrap().parse().unwrap(),
+            count: 0,
         }
-        coord
     }
 
     #[allow(dead_code)]
-    pub fn distance_to(&self, x: i32, y: i32) -> i32 {
+    fn distance_to(&self, x: i32, y: i32) -> i32 {
         (self.x - x).abs() + (self.y - y).abs()
     }
 }
 
 #[derive(Debug, Default)]
-pub struct CoordinateMap {
-    pub leftmost: Option<i32>,
-    pub rightmost: Option<i32>,
-    pub topmost: Option<i32>,
-    pub bottommost: Option<i32>,
-    pub coords: Vec<Coordinate>,
+struct CoordinateMap {
+    leftmost: Option<i32>,
+    rightmost: Option<i32>,
+    topmost: Option<i32>,
+    bottommost: Option<i32>,
+    coords: Vec<Coordinate>,
 }
 
 impl CoordinateMap {
-    pub fn new() -> CoordinateMap {
+    fn new() -> Self {
         Default::default()
     }
 
-    pub fn add(&mut self, coord_str: &str) -> &mut CoordinateMap {
+    fn add(&mut self, coord_str: &str) {
         let coord = Coordinate::from_string(coord_str);
 
         self.leftmost = if self.leftmost.unwrap_or(999999) > coord.x {
@@ -73,8 +68,6 @@ impl CoordinateMap {
         };
 
         self.coords.push(coord);
-
-        self
     }
 }
 

@@ -19,7 +19,7 @@ enum Command {
 
 impl Screen {
     fn new() -> Self {
-        Screen([['.'; 50]; 6])
+        Self([['.'; 50]; 6])
     }
 
     fn print(&self) {

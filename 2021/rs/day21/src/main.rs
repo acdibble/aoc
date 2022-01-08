@@ -90,7 +90,7 @@ impl Scores {
     }
 
     fn reverse(&self) -> Self {
-        Scores(self.1, self.0)
+        Self(self.1, self.0)
     }
 }
 

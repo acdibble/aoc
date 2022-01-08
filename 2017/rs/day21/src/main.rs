@@ -31,10 +31,10 @@ enum Form {
 impl Form {
     fn next(&self) -> Self {
         match self {
-            Form::One => Form::Two,
-            Form::Two => Form::Three,
-            Form::Three => Form::Four,
-            Form::Four => Form::One,
+            Self::One => Self::Two,
+            Self::Two => Self::Three,
+            Self::Three => Self::Four,
+            Self::Four => Self::One,
         }
     }
 }
@@ -182,7 +182,7 @@ impl Eq for Grid {}
 impl std::str::FromStr for Grid {
     type Err = String;
 
-    fn from_str(string: &str) -> std::result::Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
         Ok(Self {
             form: Form::One,
             layout: string

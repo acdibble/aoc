@@ -23,7 +23,7 @@ impl Beacon {
             coord_part.next().unwrap().parse().unwrap(),
         ];
 
-        Beacon {
+        Self {
             x: original[0],
             y: original[1],
             z: original[2],
@@ -97,12 +97,11 @@ impl std::ops::Sub<Beacon> for Beacon {
 
 #[derive(Debug)]
 struct Scanner {
-    id: i32,
     beacons: Vec<Beacon>,
 }
 
 impl Scanner {
-    fn from_lines(lines: &mut std::str::Lines, id: i32) -> Self {
+    fn from_lines(lines: &mut std::str::Lines) -> Self {
         let mut beacons = vec![];
 
         while let Some(line) = lines.next() {
@@ -113,7 +112,7 @@ impl Scanner {
             beacons.push(Beacon::from_str(line));
         }
 
-        Self { id, beacons }
+        Self { beacons }
     }
 
     fn enter_state(&mut self, state: u8) {
@@ -159,10 +158,8 @@ fn parse_scanners(input: &str) -> VecDeque<Scanner> {
     let mut output = VecDeque::new();
     let mut lines = input.lines();
 
-    let mut id = 0;
     while let Some(_) = lines.next() {
-        output.push_back(Scanner::from_lines(&mut lines, id));
-        id += 1;
+        output.push_back(Scanner::from_lines(&mut lines));
     }
 
     output

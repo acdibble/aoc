@@ -137,7 +137,7 @@ impl Simulator {
 impl Iterator for Simulator {
     type Item = i32;
 
-    fn next(&mut self) -> std::option::Option<<Self as std::iter::Iterator>::Item> {
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
         if !self.winners.is_empty() {
             return self.winners.pop_front();
         }

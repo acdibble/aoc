@@ -11,7 +11,7 @@ struct Reindeer {
 }
 
 impl Reindeer {
-    fn from(string: &str) -> Reindeer {
+    fn from(string: &str) -> Self {
         let mut it = string.split_ascii_whitespace();
 
         it.next().unwrap(); // name
@@ -34,7 +34,7 @@ impl Reindeer {
 
         let rest_seconds: i32 = it.next().unwrap().parse().unwrap();
 
-        Reindeer {
+        Self {
             speed,
             flight_seconds,
             rest_seconds,
@@ -69,7 +69,7 @@ fn part_one(reindeers: &mut Vec<Reindeer>) -> i32 {
 
     for reindeer in reindeers {
         let distance_traveled = reindeer.travel(2503);
-        farthest_distance = std::cmp::max(farthest_distance, distance_traveled);
+        farthest_distance = farthest_distance.max(distance_traveled);
     }
 
     farthest_distance
@@ -84,7 +84,7 @@ fn part_two(reindeers: &mut Vec<Reindeer>) -> i32 {
         for (index, reindeer) in reindeers.iter_mut().enumerate() {
             let distance_traveled = reindeer.travel(1);
             distances[index] = distance_traveled;
-            current_leader = std::cmp::max(current_leader, distance_traveled);
+            current_leader = current_leader.max(distance_traveled);
         }
 
         for (index, distance) in distances.iter().enumerate() {

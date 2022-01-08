@@ -4,12 +4,6 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-#[derive(Debug)]
-struct Rule {
-    root: char,
-    outputs: Vec<(char, char)>,
-}
-
 type RuleMap = HashMap<char, Vec<(char, char)>>;
 
 fn parse_rules(lines: std::str::Lines) -> RuleMap {

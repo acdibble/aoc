@@ -138,7 +138,7 @@ fn calculate_distance(input: &String, should_return: bool) -> usize {
             };
         }
 
-        shortest = std::cmp::min(shortest, length);
+        shortest = shortest.min(length);
     }
 
     shortest

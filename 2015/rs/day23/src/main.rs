@@ -11,8 +11,8 @@ enum Register {
 impl Register {
     fn from(string: &str) -> Self {
         match string {
-            "a" | "a," => Register::A,
-            "b" | "b," => Register::B,
+            "a" | "a," => Self::A,
+            "b" | "b," => Self::B,
             _ => unreachable!(),
         }
     }
@@ -35,7 +35,7 @@ struct Computer {
 
 impl Computer {
     fn new() -> Self {
-        Computer { a: 0, b: 0, ip: 0 }
+        Self { a: 0, b: 0, ip: 0 }
     }
 
     fn register_for(&mut self, register: &Register) -> &mut u32 {

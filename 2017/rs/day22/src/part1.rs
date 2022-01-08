@@ -43,7 +43,7 @@ impl TryFrom<char> for State {
 
     fn try_from(
         ch: char,
-    ) -> std::result::Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
+    ) -> Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
         match ch {
             '.' => Ok(Self::Clean),
             '#' => Ok(Self::Infected),
@@ -74,7 +74,7 @@ struct Grid(HashMap<(i32, i32), State>);
 impl std::str::FromStr for Grid {
     type Err = String;
 
-    fn from_str(string: &str) -> std::result::Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
         Ok(Grid(
             string
                 .lines()

@@ -24,7 +24,7 @@ impl Component {
 impl std::str::FromStr for Component {
     type Err = String;
 
-    fn from_str(string: &str) -> std::result::Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
         let mut parts = string.split('/');
 
         Ok(Component(
