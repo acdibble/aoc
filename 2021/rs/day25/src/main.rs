@@ -19,9 +19,7 @@ impl Tile {
 impl std::convert::TryFrom<char> for Tile {
     type Error = char;
 
-    fn try_from(
-        ch: char,
-    ) -> Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
+    fn try_from(ch: char) -> Result<Self, Self::Error> {
         match ch {
             'v' => Ok(Self::South),
             '>' => Ok(Self::East),

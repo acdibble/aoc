@@ -25,7 +25,7 @@ impl Plant {
 impl std::convert::TryFrom<char> for State {
     type Error = char;
 
-    fn try_from(ch: char) -> Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
+    fn try_from(ch: char) -> Result<Self, Self::Error> {
         match ch {
             '.' => Ok(Self::Dead),
             '#' => Ok(Self::Live),

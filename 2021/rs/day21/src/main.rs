@@ -72,7 +72,7 @@ struct Scores(i128, i128);
 impl std::ops::Add<Scores> for Scores {
     type Output = Self;
 
-    fn add(self, other: Self) -> <Self as std::ops::Add<Self>>::Output {
+    fn add(self, other: Self) -> Self>::Output {
         Self(self.0 + other.0, self.1 + other.1)
     }
 }

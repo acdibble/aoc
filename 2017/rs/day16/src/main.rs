@@ -31,7 +31,7 @@ fn chars_to_usize(chars: &mut std::str::Chars) -> usize {
 
 impl std::str::FromStr for Move {
     type Err = String;
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut chars = string.chars();
 
         match chars.next() {

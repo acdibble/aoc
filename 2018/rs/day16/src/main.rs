@@ -28,7 +28,7 @@ enum Opcode {
 impl convert::TryFrom<usize> for Opcode {
     type Error = ();
 
-    fn try_from(number: usize) -> Result<Self, <Self as convert::TryFrom<usize>>::Error> {
+    fn try_from(number: usize) -> Result<Self, Self::Error> {
         match number {
             0 => Ok(Self::Addr),
             1 => Ok(Self::Addi),

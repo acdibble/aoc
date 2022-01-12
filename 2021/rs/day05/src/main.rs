@@ -15,7 +15,7 @@ struct Point {
 impl FromStr for Point {
     type Err = ();
 
-    fn from_str(string: &str) -> Result<Self, <Self as FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut parts = string.split(',');
 
         if let (Some(x), Some(y)) = (parts.next(), parts.next()) {
@@ -39,7 +39,7 @@ struct LineIter {
 impl Iterator for LineIter {
     type Item = (i32, i32);
 
-    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
+    fn next(&mut self) -> Option<Self::Item> {
         if self.done {
             return None;
         }
@@ -82,7 +82,7 @@ impl Line {
 impl FromStr for Line {
     type Err = ();
 
-    fn from_str(string: &str) -> Result<Self, <Self as FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut parts = string.split(" -> ");
 
         if let (Some(start), Some(end)) = (parts.next(), parts.next()) {

@@ -47,9 +47,7 @@ enum State {
 impl TryFrom<char> for State {
     type Error = char;
 
-    fn try_from(
-        ch: char,
-    ) -> Result<Self, <Self as std::convert::TryFrom<char>>::Error> {
+    fn try_from(ch: char) -> Result<Self, Self::Error> {
         match ch {
             '.' => Ok(Self::Clean),
             '#' => Ok(Self::Infected),
@@ -80,7 +78,7 @@ struct Grid(HashMap<(i32, i32), State>);
 impl std::str::FromStr for Grid {
     type Err = String;
 
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         Ok(Grid(
             string
                 .lines()

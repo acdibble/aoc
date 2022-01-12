@@ -20,7 +20,7 @@ impl Coord {
 
 impl std::str::FromStr for Coord {
     type Err = String;
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut triples = [(0, 0); 3];
         let mut current = 0;
 
@@ -70,7 +70,7 @@ impl Particle {
 impl std::str::FromStr for Particle {
     type Err = String;
 
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut parts = string.split(", ");
 
         Ok(Self {

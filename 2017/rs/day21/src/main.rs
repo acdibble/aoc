@@ -182,7 +182,7 @@ impl Eq for Grid {}
 impl std::str::FromStr for Grid {
     type Err = String;
 
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             form: Form::One,
             layout: string

@@ -166,7 +166,7 @@ impl Pair {
 impl std::ops::Add<Self> for Pair {
     type Output = Self;
 
-    fn add(self, other: Self) -> <Self as std::ops::Add<Self>>::Output {
+    fn add(self, other: Self) -> Self>::Output {
         let mut result = Pair {
             left: Value::new_pair(self),
             right: Value::new_pair(other),

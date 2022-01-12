@@ -1,4 +1,3 @@
-use std::cmp;
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -115,12 +114,9 @@ fn find_high_score(ingredients: &[Ingredient], caloric_target: Option<i32>) -> i
             acc + ingredients[index].texture * amount
         });
 
-        let score = cmp::max(capacity, 0)
-            * cmp::max(durability, 0)
-            * cmp::max(flavor, 0)
-            * cmp::max(texture, 0);
+        let score = capacity.max(0) * durability.max(0) * flavor.max(0) * texture.max(0);
 
-        max_score = cmp::max(score, max_score);
+        max_score = score.max(max_score);
     }
 
     max_score
@@ -134,14 +130,23 @@ fn part_two(ingredients: &[Ingredient]) -> i32 {
     find_high_score(ingredients, Some(500))
 }
 
+fn time_it<F>(fun: F)
+where
+    F: Fn() -> (),
+{
+    let start = std::time::SystemTime::now();
+    fun();
+    println!("Time elapsed: {} ms", start.elapsed().unwrap().as_millis())
+}
+
 fn main() -> std::io::Result<()> {
     let file_path = env::current_dir()?.join(Path::new("data.txt"));
     let input = fs::read_to_string(file_path)?;
 
     let ingredients: Vec<_> = input.lines().map(Ingredient::from).collect();
 
-    println!("part 1: {}", part_one(&ingredients));
-    println!("part 2: {}", part_two(&ingredients));
+    time_it(|| println!("part 1: {}", part_one(&ingredients)));
+    time_it(|| println!("part 2: {}", part_two(&ingredients)));
 
     Ok(())
 }

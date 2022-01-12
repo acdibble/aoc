@@ -89,7 +89,7 @@ impl Beacon {
 
 impl std::ops::Sub<Beacon> for Beacon {
     type Output = [i32; 3];
-    fn sub(self, other: Self) -> <Self as std::ops::Sub<Self>>::Output {
+    fn sub(self, other: Self) -> Self>::Output {
         let [x1, y1, z1] = self.original;
         [x1 - other.x, y1 - other.y, z1 - other.z]
     }

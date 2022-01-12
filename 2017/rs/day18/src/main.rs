@@ -16,7 +16,7 @@ impl Arg {}
 impl std::str::FromStr for Arg {
     type Err = String;
 
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string.parse::<i64>() {
             Ok(value) => Ok(Self::Val(value)),
             _ => match string.chars().nth(0) {
@@ -41,7 +41,7 @@ enum Instruction {
 impl std::str::FromStr for Instruction {
     type Err = String;
 
-    fn from_str(string: &str) -> Result<Self, <Self as std::str::FromStr>::Err> {
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
         let mut words = string.split_ascii_whitespace();
         let kind = words.next();
 
