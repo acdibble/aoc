@@ -1,13 +1,32 @@
+use intcode::VM;
 use std::time::SystemTime;
 
 const DATA: &'static str = include_str!("../data.txt");
 
 fn part_one() -> i32 {
-    0
+    let mut vm = VM::from(DATA);
+    vm.write_input(1);
+    vm.run();
+
+    let result = loop {
+        match vm.read_output() {
+            Some(0) => {}
+            None => unreachable!(),
+            Some(value) => break value,
+        }
+    };
+
+    assert!(vm.read_output().is_none());
+
+    result
 }
 
 fn part_two() -> i32 {
-    0
+    let mut vm = VM::from(DATA);
+    vm.write_input(5);
+    vm.run();
+
+    vm.read_output().unwrap()
 }
 
 fn time_it<F, T>(fun: F) -> T
