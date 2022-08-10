@@ -105,7 +105,7 @@ fn main() -> std::io::Result<()> {
     let input = fs::read_to_string(file_path)?;
 
     time_it(|| println!("part 1: {}", part_one(input.trim_end())));
-    time_it(|| println!("part 1: {}", part_two(input.trim_end())));
+    time_it(|| println!("part 2: {}", part_two(input.trim_end())));
 
     Ok(())
 }

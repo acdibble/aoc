@@ -154,9 +154,7 @@ where
     result
 }
 
-fn main() -> std::io::Result<()> {
+fn main() {
     time_it(|| println!("part 1: {}", part_one()));
-    time_it(|| println!("part 1: {}", part_two()));
-
-    Ok(())
+    time_it(|| println!("part 2: {}", part_two()));
 }

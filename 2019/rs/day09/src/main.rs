@@ -1,10 +1,12 @@
-use std::{env, fs, path::Path, time::SystemTime};
+use std::time::SystemTime;
 
-fn part_one(input: &str) -> i32 {
+const DATA: &'static str = include_str!("../data.txt");
+
+fn part_one() -> i32 {
     0
 }
 
-fn part_two(input: &str) -> i32 {
+fn part_two() -> i32 {
     0
 }
 
@@ -18,12 +20,7 @@ where
     result
 }
 
-fn main() -> std::io::Result<()> {
-    let file_path = env::current_dir()?.join(Path::new("data.txt"));
-    let input = fs::read_to_string(file_path)?;
-
-    time_it(|| println!("part 1: {}", part_one(&input)));
-    time_it(|| println!("part 1: {}", part_two(&input)));
-
-    Ok(())
+fn main() {
+    time_it(|| println!("part 1: {}", part_one()));
+    time_it(|| println!("part 2: {}", part_two()));
 }

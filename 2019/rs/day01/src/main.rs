@@ -34,7 +34,7 @@ fn main() -> std::io::Result<()> {
     let numbers: Vec<i32> = input.split('\n').flat_map(|s| s.parse::<i32>()).collect();
 
     time_it(|| println!("part 1: {}", part_one(&numbers)));
-    time_it(|| println!("part 1: {}", part_two(&numbers)));
+    time_it(|| println!("part 2: {}", part_two(&numbers)));
 
     Ok(())
 }

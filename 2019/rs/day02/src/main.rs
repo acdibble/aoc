@@ -89,7 +89,7 @@ fn main() -> std::io::Result<()> {
         .collect();
 
     time_it(|| println!("part 1: {}", part_one(opcodes.clone())));
-    time_it(|| println!("part 1: {}", part_two(opcodes.clone())));
+    time_it(|| println!("part 2: {}", part_two(opcodes.clone())));
 
     Ok(())
 }
