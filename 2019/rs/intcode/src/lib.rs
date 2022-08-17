@@ -1,21 +1,31 @@
 use std::collections::VecDeque;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum Mode {
     Position,
     Immediate,
 }
 
+impl From<i32> for Mode {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => Self::Position,
+            1 => Self::Immediate,
+            _ => unreachable!(),
+        }
+    }
+}
+
 enum OpCode {
-    Add = 1,
-    Mul = 2,
-    In = 3,
-    Out = 4,
-    Jnz = 5,
-    Jz = 6,
-    Lt = 7,
-    Eq = 8,
-    Halt = 99,
+    Add,
+    Mul,
+    In,
+    Out,
+    Jnz,
+    Jz,
+    Lt,
+    Eq,
+    Halt,
 }
 
 impl From<i32> for OpCode {
@@ -35,18 +45,9 @@ impl From<i32> for OpCode {
     }
 }
 
-impl From<i32> for Mode {
-    fn from(value: i32) -> Self {
-        match value {
-            0 => Self::Position,
-            1 => Self::Immediate,
-            _ => unreachable!(),
-        }
-    }
-}
-
+#[derive(Debug, Clone)]
 pub struct VM {
-    opcodes: Box<[i32]>,
+    intcodes: Box<[i32]>,
     pc: usize,
     input: VecDeque<i32>,
     output: VecDeque<i32>,
@@ -54,33 +55,66 @@ pub struct VM {
     mode_one: Mode,
     mode_two: Mode,
     mode_three: Mode,
+
+    halted: bool,
 }
 
-pub enum ExitCode {
-    Ok,
-    Input,
-}
-
-impl VM {
-    pub fn from(input: &'static str) -> Self {
+impl From<Vec<i32>> for VM {
+    fn from(intcodes: Vec<i32>) -> Self {
         Self {
-            opcodes: input
-                .trim()
-                .split(',')
-                .flat_map(str::parse)
-                .collect::<Vec<i32>>()
-                .into_boxed_slice(),
+            intcodes: intcodes.into_boxed_slice(),
             pc: 0,
             input: Default::default(),
             output: Default::default(),
             mode_one: Mode::Position,
             mode_two: Mode::Position,
             mode_three: Mode::Position,
+            halted: false,
         }
+    }
+}
+
+impl From<&str> for VM {
+    fn from(input: &str) -> Self {
+        let opcodes = Self::parse_intcodes(input);
+        Self::from(opcodes)
+    }
+}
+
+impl From<&Vec<i32>> for VM {
+    fn from(intcodes: &Vec<i32>) -> Self {
+        Self {
+            intcodes: intcodes.clone().into_boxed_slice(),
+            pc: 0,
+            input: Default::default(),
+            output: Default::default(),
+            mode_one: Mode::Position,
+            mode_two: Mode::Position,
+            mode_three: Mode::Position,
+            halted: false,
+        }
+    }
+}
+
+impl VM {
+    pub fn parse_intcodes(input: &str) -> Vec<i32> {
+        input
+            .trim()
+            .split(',')
+            .flat_map(str::parse)
+            .collect::<Vec<i32>>()
+    }
+
+    pub fn reset(&mut self, intcodes: &Vec<i32>) {
+        self.intcodes.copy_from_slice(intcodes);
+        self.pc = 0;
+        self.input.clear();
+        self.output.clear();
+        self.halted = false;
     }
 
     fn read_int(&mut self) -> i32 {
-        let code = self.opcodes[self.pc];
+        let code = self.intcodes[self.pc];
         self.pc += 1;
         code
     }
@@ -89,7 +123,7 @@ impl VM {
         let value = self.read_int();
 
         match mode {
-            Mode::Position => self.opcodes[value as usize],
+            Mode::Position => self.intcodes[value as usize],
             Mode::Immediate => value,
         }
     }
@@ -120,7 +154,11 @@ impl VM {
         self.output.pop_back()
     }
 
-    pub fn run(&mut self) -> ExitCode {
+    pub fn run(&mut self) {
+        if self.halted {
+            return;
+        }
+
         loop {
             match self.read_op() {
                 OpCode::Add => {
@@ -128,21 +166,24 @@ impl VM {
                     let b = self.read_param(self.mode_two);
                     let index = self.read_int() as usize;
 
-                    self.opcodes[index] = a + b;
+                    self.intcodes[index] = a + b;
                 }
                 OpCode::Mul => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
                     let index = self.read_int() as usize;
 
-                    self.opcodes[index] = a * b;
+                    self.intcodes[index] = a * b;
                 }
                 OpCode::In => match self.read_input() {
                     Some(value) => {
                         let index = self.read_int() as usize;
-                        self.opcodes[index] = value;
+                        self.intcodes[index] = value;
                     }
-                    _ => return ExitCode::Input,
+                    _ => {
+                        self.pc -= 1;
+                        return;
+                    }
                 },
                 OpCode::Out => {
                     let param = self.read_param(self.mode_one);
@@ -170,16 +211,19 @@ impl VM {
                     let b = self.read_param(self.mode_two);
                     let index = self.read_int() as usize;
 
-                    self.opcodes[index] = if a < b { 1 } else { 0 }
+                    self.intcodes[index] = if a < b { 1 } else { 0 }
                 }
                 OpCode::Eq => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
                     let index = self.read_int() as usize;
 
-                    self.opcodes[index] = if a == b { 1 } else { 0 }
+                    self.intcodes[index] = if a == b { 1 } else { 0 }
                 }
-                OpCode::Halt => return ExitCode::Ok,
+                OpCode::Halt => {
+                    self.halted = true;
+                    return;
+                }
             }
         }
     }
