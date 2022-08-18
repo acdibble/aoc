@@ -1,13 +1,24 @@
+use intcode::VM;
 use std::time::SystemTime;
 
 const DATA: &'static str = include_str!("../data.txt");
 
-fn part_one() -> i32 {
-    0
+fn part_one() -> i64 {
+    let mut vm = VM::from(DATA);
+
+    vm.write_input(1);
+    vm.run();
+
+    vm.read_output().unwrap()
 }
 
-fn part_two() -> i32 {
-    0
+fn part_two() -> i64 {
+    let mut vm = VM::from(DATA);
+
+    vm.write_input(2);
+    vm.run();
+
+    vm.read_output().unwrap()
 }
 
 fn time_it<F, T>(fun: F) -> T

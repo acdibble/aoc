@@ -4,41 +4,45 @@ use std::collections::VecDeque;
 enum Mode {
     Position,
     Immediate,
+    Relative,
 }
 
-impl From<i32> for Mode {
-    fn from(value: i32) -> Self {
+impl From<i64> for Mode {
+    fn from(value: i64) -> Self {
         match value {
             0 => Self::Position,
             1 => Self::Immediate,
+            2 => Self::Relative,
             _ => unreachable!(),
         }
     }
 }
 
-enum OpCode {
+enum Op {
     Add,
-    Mul,
-    In,
-    Out,
-    Jnz,
-    Jz,
-    Lt,
-    Eq,
+    Multiply,
+    Input,
+    Output,
+    JumpIfNotZero,
+    JumpIfZero,
+    LessThan,
+    Equal,
+    AdjustRelativeBase,
     Halt,
 }
 
-impl From<i32> for OpCode {
-    fn from(value: i32) -> Self {
+impl From<i64> for Op {
+    fn from(value: i64) -> Self {
         match value {
             1 => Self::Add,
-            2 => Self::Mul,
-            3 => Self::In,
-            4 => Self::Out,
-            5 => Self::Jnz,
-            6 => Self::Jz,
-            7 => Self::Lt,
-            8 => Self::Eq,
+            2 => Self::Multiply,
+            3 => Self::Input,
+            4 => Self::Output,
+            5 => Self::JumpIfNotZero,
+            6 => Self::JumpIfZero,
+            7 => Self::LessThan,
+            8 => Self::Equal,
+            9 => Self::AdjustRelativeBase,
             99 => Self::Halt,
             _ => unreachable!("unexpected op: {value}"),
         }
@@ -47,22 +51,23 @@ impl From<i32> for OpCode {
 
 #[derive(Debug, Clone)]
 pub struct VM {
-    intcodes: Box<[i32]>,
+    intcodes: Vec<i64>,
     pc: usize,
-    input: VecDeque<i32>,
-    output: VecDeque<i32>,
+    input: VecDeque<i64>,
+    output: VecDeque<i64>,
 
     mode_one: Mode,
     mode_two: Mode,
     mode_three: Mode,
 
     halted: bool,
+    relative_base: i64,
 }
 
-impl From<Vec<i32>> for VM {
-    fn from(intcodes: Vec<i32>) -> Self {
+impl From<Vec<i64>> for VM {
+    fn from(intcodes: Vec<i64>) -> Self {
         Self {
-            intcodes: intcodes.into_boxed_slice(),
+            intcodes,
             pc: 0,
             input: Default::default(),
             output: Default::default(),
@@ -70,42 +75,33 @@ impl From<Vec<i32>> for VM {
             mode_two: Mode::Position,
             mode_three: Mode::Position,
             halted: false,
+            relative_base: 0,
         }
     }
 }
 
 impl From<&str> for VM {
     fn from(input: &str) -> Self {
-        let opcodes = Self::parse_intcodes(input);
-        Self::from(opcodes)
+        Self::from(Self::parse_intcodes(input))
     }
 }
 
-impl From<&Vec<i32>> for VM {
-    fn from(intcodes: &Vec<i32>) -> Self {
-        Self {
-            intcodes: intcodes.clone().into_boxed_slice(),
-            pc: 0,
-            input: Default::default(),
-            output: Default::default(),
-            mode_one: Mode::Position,
-            mode_two: Mode::Position,
-            mode_three: Mode::Position,
-            halted: false,
-        }
+impl From<&Vec<i64>> for VM {
+    fn from(intcodes: &Vec<i64>) -> Self {
+        Self::from(intcodes.clone())
     }
 }
 
 impl VM {
-    pub fn parse_intcodes(input: &str) -> Vec<i32> {
+    pub fn parse_intcodes(input: &str) -> Vec<i64> {
         input
             .trim()
             .split(',')
             .flat_map(str::parse)
-            .collect::<Vec<i32>>()
+            .collect::<Vec<i64>>()
     }
 
-    pub fn reset(&mut self, intcodes: &Vec<i32>) {
+    pub fn reset(&mut self, intcodes: &Vec<i64>) {
         self.intcodes.copy_from_slice(intcodes);
         self.pc = 0;
         self.input.clear();
@@ -113,44 +109,68 @@ impl VM {
         self.halted = false;
     }
 
-    fn read_int(&mut self) -> i32 {
+    fn read_int(&mut self) -> i64 {
         let code = self.intcodes[self.pc];
         self.pc += 1;
         code
     }
 
-    fn read_param(&mut self, mode: Mode) -> i32 {
+    fn write_memory(&mut self, mode: Mode, value: i64) {
+        let at = self.read_int();
+        let index = match mode {
+            Mode::Immediate => unreachable!("cannot write memory in immediate mode"),
+            Mode::Relative => at + self.relative_base,
+            Mode::Position => at,
+        } as usize;
+
+        if self.intcodes.len() <= index {
+            self.intcodes.resize(index + 1, 0);
+        }
+
+        self.intcodes[index] = value;
+    }
+
+    fn read_memory(&mut self, index: usize) -> i64 {
+        if self.intcodes.len() <= index {
+            self.intcodes.resize(index + 1, 0);
+        }
+
+        self.intcodes[index]
+    }
+
+    fn read_param(&mut self, mode: Mode) -> i64 {
         let value = self.read_int();
 
         match mode {
-            Mode::Position => self.intcodes[value as usize],
+            Mode::Position => self.read_memory(value as usize),
             Mode::Immediate => value,
+            Mode::Relative => self.read_memory((self.relative_base + value) as usize),
         }
     }
 
-    fn read_op(&mut self) -> OpCode {
+    fn read_op(&mut self) -> Op {
         let int = self.read_int();
 
         self.mode_one = Mode::from(int / 100 % 10);
         self.mode_two = Mode::from(int / 1000 % 10);
         self.mode_three = Mode::from(int / 10000 % 10);
 
-        OpCode::from(int % 100)
+        Op::from(int % 100)
     }
 
-    fn read_input(&mut self) -> Option<i32> {
+    fn read_input(&mut self) -> Option<i64> {
         self.input.pop_back()
     }
 
-    fn write_output(&mut self, value: i32) {
+    fn write_output(&mut self, value: i64) {
         self.output.push_front(value)
     }
 
-    pub fn write_input(&mut self, value: i32) {
+    pub fn write_input(&mut self, value: i64) {
         self.input.push_front(value)
     }
 
-    pub fn read_output(&mut self) -> Option<i32> {
+    pub fn read_output(&mut self) -> Option<i64> {
         self.output.pop_back()
     }
 
@@ -161,36 +181,29 @@ impl VM {
 
         loop {
             match self.read_op() {
-                OpCode::Add => {
+                Op::Add => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
-                    let index = self.read_int() as usize;
-
-                    self.intcodes[index] = a + b;
+                    self.write_memory(self.mode_three, a + b);
                 }
-                OpCode::Mul => {
+                Op::Multiply => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
-                    let index = self.read_int() as usize;
-
-                    self.intcodes[index] = a * b;
+                    self.write_memory(self.mode_three, a * b);
                 }
-                OpCode::In => match self.read_input() {
-                    Some(value) => {
-                        let index = self.read_int() as usize;
-                        self.intcodes[index] = value;
-                    }
+                Op::Input => match self.read_input() {
+                    Some(value) => self.write_memory(self.mode_one, value),
                     _ => {
                         self.pc -= 1;
                         return;
                     }
                 },
-                OpCode::Out => {
+                Op::Output => {
                     let param = self.read_param(self.mode_one);
 
                     self.write_output(param);
                 }
-                OpCode::Jnz => {
+                Op::JumpIfNotZero => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
 
@@ -198,7 +211,7 @@ impl VM {
                         self.pc = b as usize;
                     }
                 }
-                OpCode::Jz => {
+                Op::JumpIfZero => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
 
@@ -206,21 +219,20 @@ impl VM {
                         self.pc = b as usize;
                     }
                 }
-                OpCode::Lt => {
+                Op::LessThan => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
-                    let index = self.read_int() as usize;
-
-                    self.intcodes[index] = if a < b { 1 } else { 0 }
+                    self.write_memory(self.mode_three, if a < b { 1 } else { 0 })
                 }
-                OpCode::Eq => {
+                Op::Equal => {
                     let a = self.read_param(self.mode_one);
                     let b = self.read_param(self.mode_two);
-                    let index = self.read_int() as usize;
-
-                    self.intcodes[index] = if a == b { 1 } else { 0 }
+                    self.write_memory(self.mode_three, if a == b { 1 } else { 0 })
                 }
-                OpCode::Halt => {
+                Op::AdjustRelativeBase => {
+                    self.relative_base += self.read_param(self.mode_one);
+                }
+                Op::Halt => {
                     self.halted = true;
                     return;
                 }
