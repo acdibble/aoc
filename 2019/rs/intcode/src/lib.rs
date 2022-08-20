@@ -60,7 +60,7 @@ pub struct VM {
     mode_two: Mode,
     mode_three: Mode,
 
-    halted: bool,
+    pub halted: bool,
     relative_base: i64,
 }
 

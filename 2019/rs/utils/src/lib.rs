@@ -170,7 +170,7 @@ pub mod fraction {
 pub mod grid {
     use super::fraction::Fraction;
 
-    #[derive(Debug, Eq, PartialEq, Copy, Clone)]
+    #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
     pub struct Coordinate {
         pub x: i32,
         pub y: i32,
@@ -192,6 +192,43 @@ pub mod grid {
             Self {
                 x: -self.y,
                 y: self.x,
+            }
+        }
+
+        pub fn translate_up(&self) -> Self {
+            Self {
+                x: self.x,
+                y: self.y + 1,
+            }
+        }
+
+        pub fn translate_down(&self) -> Self {
+            Self {
+                x: self.x,
+                y: self.y - 1,
+            }
+        }
+
+        pub fn translate_left(&self) -> Self {
+            Self {
+                x: self.x - 1,
+                y: self.y,
+            }
+        }
+
+        pub fn translate_right(&self) -> Self {
+            Self {
+                x: self.x + 1,
+                y: self.y,
+            }
+        }
+
+        pub fn translate(&self, direction: &Direction) -> Self {
+            match direction {
+                Direction::Up => self.translate_up(),
+                Direction::Right => self.translate_right(),
+                Direction::Down => self.translate_down(),
+                Direction::Left => self.translate_left(),
             }
         }
 
@@ -266,6 +303,34 @@ pub mod grid {
     impl std::fmt::Display for Coordinate {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(f, "({}, {})", self.x, self.y)
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    pub enum Direction {
+        Up,
+        Down,
+        Left,
+        Right,
+    }
+
+    impl Direction {
+        pub fn right(&self) -> Self {
+            match self {
+                Self::Up => Self::Right,
+                Self::Right => Self::Down,
+                Self::Down => Self::Left,
+                Self::Left => Self::Up,
+            }
+        }
+
+        pub fn left(&self) -> Self {
+            match self {
+                Self::Up => Self::Left,
+                Self::Right => Self::Up,
+                Self::Down => Self::Right,
+                Self::Left => Self::Down,
+            }
         }
     }
 }
