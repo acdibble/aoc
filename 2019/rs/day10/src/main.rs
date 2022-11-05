@@ -3,7 +3,7 @@ use std::{
     collections::{HashMap, HashSet},
     time::SystemTime,
 };
-use utils::{fraction::Fraction, grid::Coordinate};
+use utils::{fractions::Fraction, grid::Coordinate};
 
 const DATA: &'static str = include_str!("../data.txt");
 
