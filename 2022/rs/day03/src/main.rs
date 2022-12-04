@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash, time::SystemTime};
+use std::{collections::HashSet, time::SystemTime};
 
 const DATA: &'static str = include_str!("../data.txt");
 
