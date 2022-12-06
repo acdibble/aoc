@@ -2,54 +2,26 @@ use std::time::SystemTime;
 
 const DATA: &'static str = include_str!("../data.txt");
 
-struct Buffer<const N: usize> {
-    chars: [char; N],
-    index: usize,
-    count: usize,
-}
-
-impl<const N: usize> Buffer<N> {
-    fn new() -> Self {
-        Self {
-            chars: ['\0'; N],
-            index: 0,
-            count: 0,
-        }
-    }
-
-    fn add(&mut self, ch: char) {
-        let index = self.index;
-        self.chars[index] = ch;
-        self.index = (self.index + 1) % N;
-        self.count += 1;
-    }
-
-    fn check(&self) -> Option<usize> {
-        for (index, ch) in self.chars.iter().enumerate() {
-            for other in self.chars.iter().skip(index + 1) {
-                if other == ch {
-                    return None;
-                }
+fn all_unique_chars<const N: usize>(slice: &[char; N]) -> bool {
+    for i in 0..N {
+        for j in (i + 1)..N {
+            if slice[i] == slice[j] {
+                return false;
             }
         }
-
-        Some(self.count)
     }
+
+    true
 }
 
 fn find_unique_sequence<const N: usize>() -> usize {
-    let mut chars = DATA.chars();
+    let mut buffer = ['\0'; N];
 
-    let mut buffer = Buffer::<N>::new();
+    for (index, ch) in DATA.char_indices() {
+        buffer[index % N] = ch;
 
-    for _ in 0..N {
-        buffer.add(chars.next().unwrap());
-    }
-
-    for ch in chars {
-        buffer.add(ch);
-        if let Some(result) = buffer.check() {
-            return result;
+        if index >= N && all_unique_chars(&buffer) {
+            return index + 1;
         }
     }
 
