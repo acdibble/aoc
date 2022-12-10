@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::{str::Lines, time::SystemTime};
 
 const DATA: &'static str = include_str!("../data.txt");
 
@@ -18,56 +18,67 @@ impl From<&'static str> for Op {
     }
 }
 
-fn run_program<F>(fun: F) -> Option<i32>
-where
-    F: Fn(usize, i32) -> Option<i32>,
-{
-    let mut x = 1;
+struct ProgramIter {
+    lines: Lines<'static>,
+    x: i32,
+    cycle: i32,
+    op: Option<Op>,
+}
 
-    let mut ops = DATA.lines().map(Op::from);
-    let mut in_progress_op = None;
-
-    let mut result = None;
-
-    for cycle in 0.. {
-        match fun(cycle, x) {
-            Some(value) => match &mut result {
-                Some(total) => *total += value,
-                opt => *opt = Some(value),
-            },
-            None => {}
+impl ProgramIter {
+    fn new(data: &'static str) -> Self {
+        Self {
+            lines: data.lines(),
+            x: 1,
+            cycle: 0,
+            op: None,
         }
+    }
+}
 
-        match in_progress_op {
-            None => match ops.next() {
-                Some(Op::Noop) => {}
-                op @ Some(Op::Addx(..)) => in_progress_op = op,
-                None => break,
+impl Iterator for ProgramIter {
+    type Item = (i32, i32);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let x = match self.op {
+            None => match self.lines.next().map(Op::from) {
+                Some(Op::Noop) => self.x,
+                op @ Some(Op::Addx(..)) => {
+                    self.op = op;
+                    self.x
+                }
+                None => return None,
             },
             Some(Op::Addx(v)) => {
-                in_progress_op = None;
-                x += v
+                self.op = None;
+                let x = self.x;
+                self.x += v;
+                x
             }
             _ => unreachable!(),
+        };
+
+        let cycle = self.cycle;
+        self.cycle += 1;
+        Some((cycle, x))
+    }
+}
+
+fn part_one() -> i32 {
+    let mut result = 0;
+
+    for (cycle, x) in ProgramIter::new(DATA) {
+        let nth_cycle = cycle + 1;
+        if [20, 60, 100, 140, 180, 220].contains(&nth_cycle) {
+            result += nth_cycle * x
         }
     }
 
     result
 }
 
-fn part_one() -> i32 {
-    run_program(|cycle, x| {
-        Some(if [20, 60, 100, 140, 180, 220].contains(&(cycle + 1)) {
-            (cycle as i32 + 1) * x
-        } else {
-            0
-        })
-    })
-    .unwrap()
-}
-
 fn part_two() {
-    run_program(|cycle, x| {
+    for (cycle, x) in ProgramIter::new(DATA) {
         let x_position = cycle as i32 % 40;
         if x_position == 0 {
             println!()
@@ -78,9 +89,8 @@ fn part_two() {
         } else {
             print!(".");
         }
-
-        None
-    });
+    }
+    println!()
 }
 
 fn time_it<F, T>(fun: F) -> T
