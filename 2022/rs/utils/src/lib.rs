@@ -1,4 +1,5 @@
 use std::{
+    collections::{HashMap, VecDeque},
     fmt::{Debug, Display},
     hash::Hash,
 };
@@ -37,6 +38,74 @@ impl Debug for Coord {
 impl Display for Coord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+#[derive(Debug)]
+pub struct Graph<T>
+where
+    T: PartialEq + Eq + Hash + Debug + Copy,
+{
+    edges: HashMap<T, Vec<T>>,
+    distance_cache: HashMap<(T, T), i32>,
+}
+
+impl<T> Graph<T>
+where
+    T: PartialEq + Eq + Hash + Debug + Copy,
+{
+    pub fn new() -> Self {
+        Self {
+            edges: HashMap::new(),
+            distance_cache: HashMap::new(),
+        }
+    }
+
+    pub fn add_node(&mut self, value: T) {
+        self.edges.insert(value, vec![]);
+    }
+
+    pub fn add_edge(&mut self, from: T, to: T) {
+        let entry = self.edges.entry(from).or_default();
+        entry.push(to);
+    }
+
+    pub fn get_edges(&mut self, from: T) -> &Vec<T> {
+        self.edges.get(&from).unwrap()
+    }
+
+    pub fn distance_between(&mut self, from: T, to: T) -> i32 {
+        if let Some(distance) = self.distance_cache.get(&(from, to)) {
+            return *distance;
+        }
+
+        let mut queue: VecDeque<_> = self
+            .edges
+            .get(&from)
+            .unwrap()
+            .iter()
+            .map(|loc| (loc, 1))
+            .collect();
+
+        while let Some((location, steps)) = queue.pop_front() {
+            let entry = self
+                .distance_cache
+                .entry((from, *location))
+                .or_insert(i32::MAX);
+            *entry = steps.min(*entry);
+
+            if *location == to {
+                self.distance_cache.insert((from, to), steps);
+                self.distance_cache.insert((to, from), steps);
+                return steps;
+            }
+
+            for next in self.edges.get(location).unwrap() {
+                queue.push_back((next, steps + 1))
+            }
+        }
+
+        unreachable!()
     }
 }
 
