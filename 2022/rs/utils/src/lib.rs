@@ -109,6 +109,53 @@ where
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Coord3D(pub i64, pub i64, pub i64);
+
+impl Coord3D {
+    pub fn adjacent(&self, other: &Self) -> bool {
+        (self.0 - other.0).abs() + (self.1 - other.1).abs() + (self.2 - other.2).abs() == 1
+    }
+}
+
+impl Coord3D {
+    pub fn translate(&self, [a, b, c]: [i64; 3]) -> Self {
+        Self(self.0 + a, self.1 + b, self.2 + c)
+    }
+}
+
+impl std::ops::Add<Coord3D> for Coord3D {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
+    }
+}
+
+impl Debug for Coord3D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.0, self.1, self.2)
+    }
+}
+
+impl Display for Coord3D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Coord3D;
+
+    #[test]
+    fn test_coord_3d_adjacency() {
+        assert!(Coord3D(1, 1, 1).adjacent(&Coord3D(2, 1, 1)));
+        assert!(!Coord3D(1, 1, 1).adjacent(&Coord3D(3, 1, 1)));
+        assert!(Coord3D(1, 1, 1).adjacent(&Coord3D(0, 1, 1)));
+    }
+}
+
 // pub struct Segment {
 //     start: Coord,
 //     end: Coord,
