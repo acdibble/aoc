@@ -156,100 +156,109 @@ mod test {
     }
 }
 
-// pub struct Segment {
-//     start: Coord,
-//     end: Coord,
-// }
+pub struct Chart<T>
+where
+    T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
+{
+    data: HashMap<Coord, T>,
+    min_x: i64,
+    max_x: i64,
+    min_y: i64,
+    max_y: i64,
+}
 
-// impl Segment {
-//     pub fn new(start: Coord, end: Coord) -> Self {
-//         Self { start, end }
-//     }
+impl<T> Display for Chart<T>
+where
+    T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let y_range: Box<dyn Iterator<Item = i64>> = if self.min_y.is_negative() {
+            Box::from((self.min_y..=self.max_y).rev())
+        } else {
+            Box::from(self.min_y..=self.max_y)
+        };
 
-//     pub fn len(&self) -> i64 {
-//         self.start.distance_to(&self.end)
-//     }
+        for y in y_range {
+            for x in self.min_x..=self.max_x {
+                write!(
+                    f,
+                    "{}",
+                    self.get(&Coord(x, y)).copied().unwrap_or_default().into() as char
+                )?;
+            }
+            write!(f, "\n")?;
+        }
 
-//     pub fn iter(&self) -> impl Iterator<Item = Coord> + '_ {
-//         let distance = self.len();
-//         let dy = self.start.1 - self.end.1;
-//         let dx = self.start.0 - self.end.0;
+        Ok(())
+    }
+}
 
-//         (0..=distance)
-//             .map(move |i| Coord(self.start.0 + dx * i, self.start.1 + dy * i))
-//             .into_iter()
-//     }
-// }
+impl<T> Chart<T>
+where
+    T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
+{
+    pub fn new() -> Self {
+        Self {
+            data: HashMap::new(),
+            min_x: 0,
+            min_y: 0,
+            max_x: 0,
+            max_y: 0,
+        }
+    }
 
-// pub struct Chart<T>
-// where
-//     T: Default + Clone + Copy + Display + PartialEq + Eq,
-// {
-//     data: HashMap<Coord, T>,
-//     min_x: i64,
-//     max_x: i64,
-//     min_y: i64,
-//     max_y: i64,
-// }
+    pub fn get(&self, coord: &Coord) -> Option<&T> {
+        self.data.get(coord)
+    }
 
-// impl<T> Display for Chart<T>
-// where
-//     T: Default + Clone + Copy + Display + PartialEq + Eq,
-// {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         for y in self.min_y..=self.max_y {
-//             for x in self.min_x..=self.max_x {
-//                 write!(f, "{}", self.get(&Coord(x, y)).copied().unwrap_or_default())?;
-//             }
-//             write!(f, "\n")?;
-//         }
+    pub fn get_mut(&mut self, coord: &Coord) -> Option<&mut T> {
+        self.data.get_mut(coord)
+    }
 
-//         Ok(())
-//     }
-// }
+    pub fn overwrite(&mut self, coord: &Coord, value: T) -> Option<T> {
+        self.min_x = self.min_x.min(coord.0);
+        self.max_x = self.max_x.max(coord.0);
+        self.min_y = self.min_y.min(coord.1);
+        self.max_y = self.max_y.max(coord.1);
+        self.data.insert(*coord, value)
+    }
 
-// impl<T> Chart<T>
-// where
-//     T: Default + Clone + Copy + Display + PartialEq + Eq,
-// {
-//     pub fn new() -> Self {
-//         Self {
-//             data: HashMap::new(),
-//             min_x: 0,
-//             min_y: 0,
-//             max_x: 0,
-//             max_y: 0,
-//         }
-//     }
+    pub fn set(&mut self, coord: &Coord, mut value: T) -> Option<T> {
+        match self.get_mut(coord) {
+            Some(entry) if *entry == Default::default() => {
+                std::mem::swap(entry, &mut value);
+                Some(value)
+            }
+            None => self.overwrite(coord, value),
+            _ => None,
+        }
+    }
 
-//     pub fn get(&self, coord: &Coord) -> Option<&T> {
-//         self.data.get(coord)
-//     }
+    pub fn print(&self) {
+        println!("{}", self)
+    }
 
-//     pub fn get_mut(&mut self, coord: &Coord) -> Option<&mut T> {
-//         self.data.get_mut(coord)
-//     }
+    pub fn top(&self) -> i64 {
+        if self.min_y < 0 {
+            self.max_y
+        } else {
+            self.min_y
+        }
+    }
 
-//     pub fn overwrite(&mut self, coord: &Coord, value: T) -> Option<T> {
-//         self.min_x = self.min_x.min(coord.0);
-//         self.max_x = self.max_x.max(coord.0);
-//         self.min_y = self.min_y.min(coord.1);
-//         self.max_y = self.max_y.max(coord.1);
-//         self.data.insert(*coord, value)
-//     }
+    pub fn bottom(&self) -> i64 {
+        if self.min_y < 0 {
+            self.min_y
+        } else {
+            self.max_y
+        }
+    }
 
-//     pub fn set(&mut self, coord: &Coord, mut value: T) -> Option<T> {
-//         match self.get_mut(coord) {
-//             Some(entry) if *entry == Default::default() => {
-//                 std::mem::swap(entry, &mut value);
-//                 Some(value)
-//             }
-//             None => self.overwrite(coord, value),
-//             _ => None,
-//         }
-//     }
+    pub fn left(&self) -> i64 {
+        self.min_x
+    }
 
-//     pub fn print(&self) {
-//         println!("{}", self)
-//     }
-// }
+    pub fn right(&self) -> i64 {
+        self.max_x
+    }
+}
