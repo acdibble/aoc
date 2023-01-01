@@ -173,6 +173,7 @@ mod test {
     }
 }
 
+#[derive(Clone)]
 pub struct Chart<T>
 where
     T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
@@ -220,6 +221,19 @@ where
 
     fn into_iter(self) -> Self::IntoIter {
         self.data.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut Chart<T>
+where
+    T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
+{
+    type Item = (&'a Coord, &'a mut T);
+
+    type IntoIter = std::collections::hash_map::IterMut<'a, Coord, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter_mut()
     }
 }
 
@@ -306,4 +320,17 @@ where
             })
         })
     }
+}
+
+pub fn gcd(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+pub fn lcm(a: i64, b: i64) -> i64 {
+    (a * b) / gcd(a, b)
 }
