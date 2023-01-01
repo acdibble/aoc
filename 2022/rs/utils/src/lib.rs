@@ -19,6 +19,15 @@ impl Coord {
     pub fn translate_x(&self, distance: i64) -> Self {
         Self(self.0 + distance, self.1)
     }
+
+    pub fn step(&self, direction: &Direction) -> Self {
+        match direction {
+            Direction::North => Self(self.0, self.1 + 1),
+            Direction::East => Self(self.0 + 1, self.1),
+            Direction::South => Self(self.0, self.1 - 1),
+            Direction::West => Self(self.0 - 1, self.1),
+        }
+    }
 }
 
 impl std::ops::Add<Coord> for Coord {
@@ -39,6 +48,14 @@ impl Display for Coord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
+}
+
+#[derive(Debug)]
+pub enum Direction {
+    North,
+    East,
+    South,
+    West,
 }
 
 #[derive(Debug)]
@@ -193,6 +210,19 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for &'a Chart<T>
+where
+    T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
+{
+    type Item = (&'a Coord, &'a T);
+
+    type IntoIter = std::collections::hash_map::Iter<'a, Coord, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
+}
+
 impl<T> Chart<T>
 where
     T: Default + Clone + Copy + PartialEq + Eq + Into<char>,
@@ -260,5 +290,20 @@ where
 
     pub fn right(&self) -> i64 {
         self.max_x
+    }
+
+    pub fn iter_grid<'a>(&'a self) -> impl Iterator<Item = (Coord, T)> + 'a {
+        let y_range: Box<dyn Iterator<Item = i64>> = if self.min_y.is_negative() {
+            Box::from((self.min_y..=self.max_y).rev())
+        } else {
+            Box::from(self.min_y..=self.max_y)
+        };
+
+        y_range.into_iter().flat_map(move |y| {
+            (self.min_x..=self.max_x).map(move |x| {
+                let coord = Coord(x, y);
+                (coord, self.data.get(&coord).copied().unwrap_or_default())
+            })
+        })
     }
 }
