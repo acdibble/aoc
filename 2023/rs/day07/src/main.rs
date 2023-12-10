@@ -108,9 +108,7 @@ impl From<&[Card; 5]> for Rank {
             .reverse()
         });
 
-        counts[0].as_mut().map(|c| c.1 += joker_count);
-
-        match counts[0] {
+        match counts[0].as_mut().map(|c| c.1 += joker_count) {
             Some((_, 5)) | None => Self::FiveOfAKind,
             Some((_, 4)) => Self::FourOfAKind,
             Some((_, 3)) if matches!(counts[1], Some((_, 2))) => Self::FullHouse,

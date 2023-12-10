@@ -4,6 +4,31 @@ pub struct Point {
     pub y: i32,
 }
 
+impl Point {
+    fn translate(&self, dx: i32, dy: i32) -> Self {
+        Self {
+            x: self.x + dx,
+            y: self.y + dy,
+        }
+    }
+
+    pub fn translate_up(&self) -> Self {
+        self.translate(0, -1)
+    }
+
+    pub fn translate_down(&self) -> Self {
+        self.translate(0, 1)
+    }
+
+    pub fn translate_left(&self) -> Self {
+        self.translate(-1, 0)
+    }
+
+    pub fn translate_right(&self) -> Self {
+        self.translate(1, 0)
+    }
+}
+
 impl From<(usize, usize)> for Point {
     fn from((x, y): (usize, usize)) -> Self {
         Self {
