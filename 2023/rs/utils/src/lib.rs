@@ -27,6 +27,10 @@ impl Point {
     pub fn translate_right(&self) -> Self {
         self.translate(1, 0)
     }
+
+    pub fn manhattan_distance(&self, other: &Self) -> i32 {
+        (self.x - other.x).abs() + (other.y - self.y).abs()
+    }
 }
 
 impl From<(usize, usize)> for Point {
