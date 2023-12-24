@@ -65,6 +65,11 @@ impl From<(i32, i32)> for Point {
     }
 }
 
+pub struct LineSegment {
+    pub start: Point,
+    pub end: Point,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Direction {
     North,
@@ -74,6 +79,10 @@ pub enum Direction {
 }
 
 impl Direction {
+    pub fn all() -> [Self; 4] {
+        [Self::North, Self::East, Self::South, Self::West]
+    }
+
     pub fn rev(&self) -> Self {
         match self {
             Self::North => Self::South,
