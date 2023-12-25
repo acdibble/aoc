@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point {
     pub x: i32,
@@ -65,9 +67,38 @@ impl From<(i32, i32)> for Point {
     }
 }
 
-pub struct LineSegment {
-    pub start: Point,
-    pub end: Point,
+pub struct Chart<T: Clone + Copy + Debug> {
+    data: Vec<Vec<T>>,
+}
+
+impl<T: Clone + Copy + Debug> Chart<T> {
+    pub fn height(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn width(&self) -> usize {
+        self.data[0].len()
+    }
+
+    pub fn get(&self, point: Point) -> Option<T> {
+        self.data
+            .get(point.y as usize)
+            .and_then(|row| row.get(point.x as usize))
+            .copied()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (Point, T)> + '_ {
+        (0..self.data.len()).flat_map(move |y| {
+            (0..self.data[y].len())
+                .map(move |x| (Point::from((x, y)), self.get(Point::from((x, y))).unwrap()))
+        })
+    }
+}
+
+impl<T: Clone + Copy + Debug> From<Vec<Vec<T>>> for Chart<T> {
+    fn from(data: Vec<Vec<T>>) -> Self {
+        Self { data }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
