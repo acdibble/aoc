@@ -1,7 +1,6 @@
 @module("fs/promises")
 external readFile: (
   string,
-  @string
   [
     | #utf8
   ],
@@ -16,3 +15,5 @@ let inspect = v => {
   Console.log(v)
   v
 }
+
+let identity = v => v
