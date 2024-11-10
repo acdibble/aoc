@@ -175,6 +175,6 @@ pub mod math {
             )*)
         }
 
-        impl_gcd_lcm_traits!(usize);
+        impl_gcd_lcm_traits!(usize, u128);
     }
 }
