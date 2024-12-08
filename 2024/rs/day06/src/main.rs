@@ -1,24 +1,7 @@
 use std::{collections::HashSet, fmt::Debug, time::SystemTime};
+use utils::{Coord, Direction};
 
 const DATA: &'static str = include_str!("../data.txt");
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Coord(i32, i32);
-
-impl Coord {
-    fn new(x: i32, y: i32) -> Self {
-        Self(x, y)
-    }
-
-    fn translate(self, direction: Direction) -> Self {
-        match direction {
-            Direction::Up => Self(self.0, self.1 - 1),
-            Direction::Down => Self(self.0, self.1 + 1),
-            Direction::Left => Self(self.0 - 1, self.1),
-            Direction::Right => Self(self.0 + 1, self.1),
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 
@@ -32,32 +15,13 @@ impl<T: Debug + Clone + Copy> Map<T> {
     }
 
     fn get(&self, coord: Coord) -> Option<T> {
-        if coord.0 < 0 || coord.1 < 0 {
+        if coord.x < 0 || coord.y < 0 {
             return None;
         }
 
         self.tiles
-            .get(coord.1 as usize)
-            .and_then(|row| row.get(coord.0 as usize).copied())
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Direction {
-    fn turn_right(self) -> Self {
-        match self {
-            Self::Up => Self::Right,
-            Self::Right => Self::Down,
-            Self::Down => Self::Left,
-            Self::Left => Self::Up,
-        }
+            .get(coord.y as usize)
+            .and_then(|row| row.get(coord.x as usize).copied())
     }
 }
 
