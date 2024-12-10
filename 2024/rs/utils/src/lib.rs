@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
@@ -14,6 +16,10 @@ impl Direction {
             Self::Down => Self::Left,
             Self::Left => Self::Up,
         }
+    }
+
+    pub const fn all() -> [Self; 4] {
+        [Self::Up, Self::Down, Self::Left, Self::Right]
     }
 }
 
@@ -35,6 +41,36 @@ impl Coord {
             Direction::Left => Self::new(self.x - 1, self.y),
             Direction::Right => Self::new(self.x + 1, self.y),
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct Map<T: Debug> {
+    data: Vec<Vec<T>>,
+}
+
+impl<T> From<Vec<Vec<T>>> for Map<T>
+where
+    T: Debug,
+{
+    fn from(data: Vec<Vec<T>>) -> Self {
+        Self { data }
+    }
+}
+
+impl<T: Debug> Map<T> {
+    pub fn get(&self, coord: Coord) -> Option<&T> {
+        self.data
+            .get(coord.y as usize)
+            .and_then(|row| row.get(coord.x as usize))
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (Coord, &T)> + '_ {
+        self.data.iter().enumerate().flat_map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .map(move |(x, value)| (Coord::new(x as i32, y as i32), value))
+        })
     }
 }
 
