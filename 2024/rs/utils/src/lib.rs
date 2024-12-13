@@ -18,6 +18,15 @@ impl Direction {
         }
     }
 
+    pub fn turn_left(self) -> Self {
+        match self {
+            Self::Up => Self::Left,
+            Self::Right => Self::Up,
+            Self::Down => Self::Right,
+            Self::Left => Self::Down,
+        }
+    }
+
     pub const fn all() -> [Self; 4] {
         [Self::Up, Self::Down, Self::Left, Self::Right]
     }
@@ -71,6 +80,11 @@ impl<T: Debug> Map<T> {
                 .enumerate()
                 .map(move |(x, value)| (Coord::new(x as i32, y as i32), value))
         })
+    }
+
+    pub fn iter_coords(&self) -> impl Iterator<Item = Coord> + '_ {
+        (0..self.data.len() as i32)
+            .flat_map(move |y| (0..self.data[0].len() as i32).map(move |x| Coord::new(x, y)))
     }
 }
 
