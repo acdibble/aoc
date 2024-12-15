@@ -51,6 +51,10 @@ impl Coord {
             Direction::Right => Self::new(self.x + 1, self.y),
         }
     }
+
+    pub fn manhattan_distance(self, other: Self) -> i32 {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
 }
 
 #[derive(Debug)]
@@ -116,5 +120,32 @@ impl std::ops::Neg for Coord {
 
     fn neg(self) -> Self::Output {
         Self::new(-self.x, -self.y)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CopyRange<T> {
+    pub start: T,
+    pub end: T,
+}
+
+impl<T: PartialOrd<T>> CopyRange<T> {
+    pub fn contains(&self, n: &T) -> bool {
+        *n >= self.start && *n <= self.end
+    }
+}
+
+impl<T> CopyRange<T> {
+    pub fn new(start: T, end: T) -> Self {
+        Self { start, end }
+    }
+}
+
+impl<T> From<std::ops::Range<T>> for CopyRange<T> {
+    fn from(range: std::ops::Range<T>) -> Self {
+        Self {
+            start: range.start,
+            end: range.end,
+        }
     }
 }
