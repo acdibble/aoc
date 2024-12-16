@@ -32,6 +32,19 @@ impl Direction {
     }
 }
 
+impl std::ops::Neg for Direction {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord {
     pub x: i32,
@@ -57,7 +70,20 @@ impl Coord {
     }
 }
 
-#[derive(Debug)]
+impl std::ops::Add<Direction> for Coord {
+    type Output = Self;
+
+    fn add(self, rhs: Direction) -> Self::Output {
+        self.translate(rhs)
+    }
+}
+
+impl std::ops::AddAssign<Direction> for Coord {
+    fn add_assign(&mut self, rhs: Direction) {
+        *self = *self + rhs;
+    }
+}
+
 pub struct Map<T: Debug> {
     data: Vec<Vec<T>>,
 }
@@ -78,6 +104,10 @@ impl<T: Debug> Map<T> {
             .and_then(|row| row.get(coord.x as usize))
     }
 
+    pub fn set(&mut self, coord: Coord, value: T) {
+        self.data[coord.y as usize][coord.x as usize] = value;
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = (Coord, &T)> + '_ {
         self.data.iter().enumerate().flat_map(|(y, row)| {
             row.iter()
@@ -89,6 +119,28 @@ impl<T: Debug> Map<T> {
     pub fn iter_coords(&self) -> impl Iterator<Item = Coord> + '_ {
         (0..self.data.len() as i32)
             .flat_map(move |y| (0..self.data[0].len() as i32).map(move |x| Coord::new(x, y)))
+    }
+}
+
+impl<T: Debug> std::fmt::Debug for Map<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in &self.data {
+            for tile in row {
+                write!(f, "{:?}", tile)?;
+            }
+            writeln!(f)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl<T: Debug + Clone + Copy> Map<T> {
+    pub fn swap(&mut self, a: Coord, b: Coord) {
+        let val_a = self.get(a).copied().unwrap();
+        let val_b = self.get(b).copied().unwrap();
+        self.set(a, val_b);
+        self.set(b, val_a);
     }
 }
 
