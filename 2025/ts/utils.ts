@@ -100,3 +100,39 @@ export class Grid<T> {
     }
   }
 }
+
+export class Range {
+  static inclusive(start: number, end: number): Range {
+    return new Range(start, end + 1);
+  }
+
+  constructor(public readonly start: number, public readonly end: number) {}
+
+  contains(value: number): boolean {
+    return value >= this.start && value < this.end;
+  }
+
+  join(other: Range): Range | null {
+    if (
+      this.contains(other.start) ||
+      this.contains(other.end) ||
+      other.contains(this.start) ||
+      other.contains(this.end)
+    ) {
+      return new Range(Math.min(this.start, other.start), Math.max(this.end, other.end));
+    }
+
+    return null;
+  }
+
+  get size(): number {
+    return this.end - this.start;
+  }
+}
+
+export const inspect = <T>(value: T): T => {
+  console.log(value);
+  return value;
+};
+
+export const isNotNullish = <T>(value: T | null | undefined): value is T => value != null;
