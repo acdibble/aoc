@@ -1,3 +1,9 @@
+function assert(condition: boolean, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(`Assertion failed: ${message}`);
+  }
+}
+
 const NONE = Symbol('none');
 
 class Option<T> {
@@ -29,6 +35,10 @@ class Option<T> {
   isSome(): boolean {
     return this.value !== NONE;
   }
+
+  isNone(): boolean {
+    return this.value === NONE;
+  }
 }
 
 const NEIGHBORS = [
@@ -42,7 +52,7 @@ const NEIGHBORS = [
   [1, 1],
 ];
 
-class Cell<T> {
+export class Cell<T> {
   constructor(
     public value: T,
     public readonly x: number,
@@ -54,32 +64,66 @@ class Cell<T> {
     for (const [dx, dy] of NEIGHBORS) {
       const neighbor = this.grid.at(this.x + dx, this.y + dy);
       if (neighbor.isSome()) {
-        yield new Cell(neighbor.unwrap(), this.x + dx, this.y + dy, this.grid);
+        yield neighbor.unwrap();
       }
     }
+  }
+
+  neighborDown(): Option<Cell<T>> {
+    return this.grid.at(this.x, this.y + 1);
+  }
+
+  neightborLeft(): Option<Cell<T>> {
+    return this.grid.at(this.x - 1, this.y);
+  }
+
+  neighborRight(): Option<Cell<T>> {
+    return this.grid.at(this.x + 1, this.y);
   }
 
   set(newValue: T): void {
     this.grid.setUnchecked(this.x, this.y, newValue);
     this.value = newValue;
   }
+
+  getKey(): number {
+    return this.y * this.grid.width + this.x;
+  }
 }
 
 export class Grid<T> {
-  static fromString<U>(data: string, rowSep = '\n', colSep = ''): Grid<U> {
-    const rows = data.split(rowSep).map((row) => row.split(colSep));
+  static fromString<U>(
+    data: string,
+    mapping: Record<string, U>,
+    { rowSep = '\n', colSep = '' }: { rowSep?: string; colSep?: string } = {},
+  ): Grid<U> {
+    const rows = data.split(rowSep).map((row) =>
+      row.split(colSep).map((cell) => {
+        const mapped = mapping[cell];
+        assert(mapped !== undefined, `No mapping found for cell value: ${cell}`);
+        return mapped;
+      }),
+    );
     return new Grid<U>(rows as U[][]);
   }
 
   constructor(private readonly data: T[][]) {}
 
-  at(x: number, y: number): Option<T> {
+  get width(): number {
+    return this.data[0].length;
+  }
+
+  get height(): number {
+    return this.data.length;
+  }
+
+  at(x: number, y: number): Option<Cell<T>> {
     if (y < 0 || y >= this.data.length) return Option.none();
 
     const row = this.data[y];
     if (x < 0 || x >= row.length) return Option.none();
 
-    return Option.some(row[x]);
+    return Option.some(new Cell(row[x], x, y, this));
   }
 
   setUnchecked(x: number, y: number, value: T): void {

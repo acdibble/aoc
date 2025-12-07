@@ -3,7 +3,10 @@ import { Grid } from './utils.ts';
 const PAPER = '@';
 const EMPTY = '.';
 
-const grid = Grid.fromString<typeof PAPER | typeof EMPTY>(await Deno.readTextFile('./data04.txt'));
+const grid = Grid.fromString(await Deno.readTextFile('./data04.txt'), {
+  [PAPER]: PAPER,
+  [EMPTY]: EMPTY,
+} as const);
 
 let part1 = 0;
 
