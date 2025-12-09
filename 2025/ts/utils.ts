@@ -180,3 +180,16 @@ export const inspect = <T>(value: T): T => {
 };
 
 export const isNotNullish = <T>(value: T | null | undefined): value is T => value != null;
+
+export class Point3D {
+  static fromString(input: string): Point3D {
+    const [, x, y, z] = input.match(/(-?\d+),(-?\d+),(-?\d+)/)!;
+    return new Point3D(Number(x), Number(y), Number(z));
+  }
+
+  constructor(public x: number, public y: number, public z: number) {}
+
+  euclideanDistance(other: Point3D): number {
+    return Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2 + (this.z - other.z) ** 2);
+  }
+}
