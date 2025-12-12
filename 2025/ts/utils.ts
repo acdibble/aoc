@@ -181,6 +181,63 @@ export const inspect = <T>(value: T): T => {
 
 export const isNotNullish = <T>(value: T | null | undefined): value is T => value != null;
 
+export class Point {
+  static fromString(input: string): Point {
+    const [, x, y] = input.match(/(-?\d+),(-?\d+)/)!;
+    return new Point(Number(x), Number(y));
+  }
+
+  readonly key: `${number},${number}`;
+
+  constructor(public x: number, public y: number) {
+    this.key = `${x},${y}`;
+  }
+
+  eq(other: Point): boolean {
+    return this.x === other.x && this.y === other.y;
+  }
+
+  translate(vector: Vector): Point {
+    return new Point(this.x + vector.x, this.y + vector.y);
+  }
+
+  vectorTo(other: Point): Vector {
+    return new Vector(other.x - this.x, other.y - this.y);
+  }
+
+  toString(): `${number},${number}` {
+    return this.key;
+  }
+}
+
+export class Vector {
+  readonly key: `${number},${number}`;
+
+  constructor(public x: number, public y: number) {
+    this.key = `${x},${y}`;
+  }
+
+  zeroX(): Vector {
+    return new Vector(0, this.y);
+  }
+
+  zeroY(): Vector {
+    return new Vector(this.x, 0);
+  }
+
+  rotateClockwise(): Vector {
+    return new Vector(-this.y, this.x);
+  }
+
+  rotateCounterClockwise(): Vector {
+    return new Vector(this.y, -this.x);
+  }
+
+  toString(): `${number},${number}` {
+    return this.key;
+  }
+}
+
 export class Point3D {
   static fromString(input: string): Point3D {
     const [, x, y, z] = input.match(/(-?\d+),(-?\d+),(-?\d+)/)!;
