@@ -246,3 +246,60 @@ export class Point3D {
     return Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2 + (this.z - other.z) ** 2);
   }
 }
+
+export class Node {
+  children = new Set<Node>();
+
+  constructor(public value: string, private graph: Graph) {}
+
+  addChild(value: string): Node {
+    const childNode = this.graph.createNode(value);
+    this.children.add(childNode);
+    return childNode;
+  }
+
+  countPaths(target: string): number {
+    const cached = this.graph.pathsCache.get(`${this.value},${target}`);
+    if (cached !== undefined) return cached;
+    const node = this.graph.getNode(target);
+    assert(node !== null, `Target node ${target} not found in graph`);
+
+    if (this.children.has(node)) return 1;
+
+    let pathCount = 0;
+
+    for (const child of this.children) {
+      pathCount += child.countPaths(target);
+    }
+
+    this.graph.pathsCache.set(`${this.value},${target}`, pathCount);
+
+    return pathCount;
+  }
+}
+
+export class Graph {
+  private cache = new Map<string, Node>();
+
+  private nodes = new Set<Node>();
+
+  pathsCache = new Map<`${string},${string}`, number>();
+
+  createNode(value: string): Node {
+    let node = this.cache.get(value);
+    if (node) return node;
+    node = new Node(value, this);
+    this.cache.set(value, node);
+    return node;
+  }
+
+  addNode(value: string): Node {
+    const node = this.createNode(value);
+    this.nodes.add(node);
+    return node;
+  }
+
+  getNode(value: string): Node | null {
+    return this.cache.get(value) ?? null;
+  }
+}
