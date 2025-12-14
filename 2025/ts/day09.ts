@@ -1,6 +1,7 @@
-import { Point, Vector } from './utils.ts';
+import * as fs from 'fs/promises';
+import { Point, Vector } from './utils.js';
 
-const points = (await Deno.readTextFile('./data09.txt'))
+const points = (await fs.readFile('./data09.txt', 'utf8'))
   .trimEnd()
   .split('\n')
   .map((l) => Point.fromString(l));

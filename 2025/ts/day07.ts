@@ -1,9 +1,10 @@
-import { Cell, Grid } from './utils.ts';
+import * as fs from 'fs/promises';
+import { Cell, Grid } from './utils.js';
 
 const EMPTY = '.';
 const SPLITTER = '^';
 
-const input = (await Deno.readTextFile('./data07.txt')).trimEnd();
+const input = (await fs.readFile('./data07.txt', 'utf8')).trimEnd();
 
 const startX = input.indexOf('S');
 

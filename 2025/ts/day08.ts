@@ -1,6 +1,7 @@
-import { Point3D } from './utils.ts';
+import * as fs from 'fs/promises';
+import { Point3D } from './utils.js';
 
-const boxes = (await Deno.readTextFile('./data08.txt'))
+const boxes = (await fs.readFile('./data08.txt', 'utf8'))
   .trim()
   .split('\n')
   .map((line) => Point3D.fromString(line));

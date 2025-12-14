@@ -1,4 +1,6 @@
-const lines = (await Deno.readTextFile('./data06.txt')).trim().split('\n');
+import * as fs from 'fs/promises';
+
+const lines = (await fs.readFile('./data06.txt', 'utf8')).trim().split('\n');
 
 const part1 = () => {
   const problems = lines.map((line, y, arr) => {

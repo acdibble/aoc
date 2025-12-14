@@ -1,9 +1,10 @@
-import { Grid } from './utils.ts';
+import * as fs from 'fs/promises';
+import { Grid } from './utils.js';
 
 const PAPER = '@';
 const EMPTY = '.';
 
-const grid = Grid.fromString(await Deno.readTextFile('./data04.txt'), {
+const grid = Grid.fromString(await fs.readFile('./data04.txt', 'utf8'), {
   [PAPER]: PAPER,
   [EMPTY]: EMPTY,
 } as const);

@@ -1,4 +1,6 @@
-const banks = (await Deno.readTextFile('data03.txt'))
+import * as fs from 'fs/promises';
+
+const banks = (await fs.readFile('data03.txt', 'utf8'))
   .trim()
   .split('\n')
   .map((l) => l.split('').map(Number));

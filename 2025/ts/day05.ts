@@ -1,6 +1,9 @@
-import { isNotNullish, Range } from './utils.ts';
+import * as fs from 'fs/promises';
+import { isNotNullish, Range } from './utils.js';
 
-const [rangeStrings, ingredients] = (await Deno.readTextFile('./data05.txt')).trim().split('\n\n');
+const [rangeStrings, ingredients] = (await fs.readFile('./data05.txt', 'utf8'))
+  .trim()
+  .split('\n\n');
 
 const ranges = rangeStrings.split('\n').map((line) => {
   const [start, end] = line.split('-');

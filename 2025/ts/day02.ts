@@ -1,4 +1,6 @@
-const ranges = (await Deno.readTextFile('data02.txt'))
+import * as fs from 'fs/promises';
+
+const ranges = (await fs.readFile('data02.txt', 'utf8'))
   .trim()
   .split(',')
   .map((r) => {

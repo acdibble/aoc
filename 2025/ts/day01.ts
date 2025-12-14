@@ -1,4 +1,6 @@
-const rotations = (await Deno.readTextFile('data01.txt'))
+import * as fs from 'fs/promises';
+
+const rotations = (await fs.readFile('data01.txt', 'utf8'))
   .trim()
   .split('\n')
   .map((line) => Number.parseInt(line.replace('R', '').replace('L', '-')));
